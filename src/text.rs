@@ -93,6 +93,28 @@ impl TextRenderer {
         buffer
     }
 
+    /// Create a text buffer with per-span colors and attributes.
+    ///
+    /// Each span is `(&str, Attrs)` — text with its own color, weight, style.
+    /// This enables per-character coloring in terminal rendering.
+    pub fn create_rich_buffer(
+        &mut self,
+        spans: &[(&str, Attrs<'_>)],
+        font_size: f32,
+        line_height: f32,
+    ) -> Buffer {
+        let metrics = Metrics::new(font_size, line_height);
+        let mut buffer = Buffer::new(&mut self.font_system, metrics);
+        buffer.set_rich_text(
+            &mut self.font_system,
+            spans.iter().map(|&(text, ref attrs)| (text, attrs.clone())),
+            &Attrs::new(),
+            Shaping::Advanced,
+            None,
+        );
+        buffer
+    }
+
     /// Prepare text areas for rendering in the current frame.
     pub fn prepare<'a>(
         &mut self,
