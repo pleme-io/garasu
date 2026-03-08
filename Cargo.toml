@@ -1,0 +1,30 @@
+[package]
+name = "garasu"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89.0"
+description = "Garasu (硝子) — GPU rendering engine: wgpu pipeline, text rendering, shader system, and winit integration"
+homepage = "https://github.com/pleme-io/garasu"
+repository = "https://github.com/pleme-io/garasu"
+readme = "README.md"
+license = "MIT"
+categories = ["rendering", "graphics"]
+keywords = ["wgpu", "gpu", "rendering", "winit", "glyphon"]
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+
+[dependencies]
+wgpu = "25"
+winit = "0.30"
+glyphon = "0.9"
+pollster = "0.4"
+tracing = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "2.0"
+raw-window-handle = "0.6"
+
+[dev-dependencies]
+tempfile = "3"
