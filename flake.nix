@@ -1,42 +1,52 @@
 {
-  description = "Garasu (硝子) — GPU rendering engine: wgpu pipeline, text, shaders, winit";
+  description = "Garasu (硝子) — GPU rendering engine: wgpu pipeline, text rendering, shader system, and winit integration";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    substrate = {
-      url = "github:pleme-io/substrate";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    crate2nix.url = "github:nix-community/crate2nix";
   };
 
   outputs =
     {
       self,
       nixpkgs,
-      substrate,
-      crate2nix,
       ...
     }:
     let
       system = "aarch64-darwin";
       pkgs = import nixpkgs { inherit system; };
-      substrateLib = substrate.libFor.${system} nixpkgs;
-      rustLibrary = import "${substrate}/lib/rust-library.nix" {
-        inherit system nixpkgs;
-        nixLib = substrate;
-        inherit crate2nix;
-      };
-      lib = rustLibrary {
-        name = "garasu";
-        src = ./.;
+
+      props = builtins.fromTOML (builtins.readFile ./Cargo.toml);
+      version = props.package.version;
+      pname = "garasu";
+
+      package = pkgs.rustPlatform.buildRustPackage {
+        inherit pname version;
+        src = pkgs.lib.cleanSource ./.;
+        cargoLock.lockFile = ./Cargo.lock;
+        doCheck = true;
+        meta = {
+          description = props.package.description;
+          homepage = props.package.homepage;
+          license = pkgs.lib.licenses.mit;
+        };
       };
     in
     {
-      inherit (lib) packages devShells apps;
+      packages.${system} = {
+        garasu = package;
+        default = package;
+      };
 
       overlays.default = final: prev: {
         garasu = self.packages.${final.system}.default;
+      };
+
+      devShells.${system}.default = pkgs.mkShellNoCC {
+        packages = [
+          pkgs.rustc
+          pkgs.cargo
+          pkgs.rust-analyzer
+        ];
       };
 
       formatter.${system} = pkgs.nixfmt-tree;
