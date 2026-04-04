@@ -2,7 +2,7 @@
   description = "Garasu (硝子) — GPU rendering engine: wgpu pipeline, text rendering, shader system, and winit integration";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-25.11";
     substrate = {
       url = "github:pleme-io/substrate";
       inputs.nixpkgs.follows = "nixpkgs";
