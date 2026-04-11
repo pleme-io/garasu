@@ -351,4 +351,256 @@ mod tests {
         let err: GarasuError = io_err.into();
         assert!(matches!(err, GarasuError::Io(_)));
     }
+
+    // ---------------------------------------------------------------
+    // TextConfig serde round-trip tests
+    // ---------------------------------------------------------------
+
+    #[test]
+    fn text_config_serde_json_round_trip() {
+        let config = TextConfig {
+            font_size: 18.5,
+            line_height: 28.0,
+            color: [0.2, 0.4, 0.6, 0.9],
+        };
+        let json = serde_json::to_string(&config).unwrap();
+        let deserialized: TextConfig = serde_json::from_str(&json).unwrap();
+        assert!((deserialized.font_size - 18.5).abs() < f32::EPSILON);
+        assert!((deserialized.line_height - 28.0).abs() < f32::EPSILON);
+        assert!((deserialized.color[0] - 0.2).abs() < f32::EPSILON);
+        assert!((deserialized.color[3] - 0.9).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn text_config_deserialize_from_json_literal() {
+        let json = r#"{"font_size":12.0,"line_height":16.0,"color":[1.0,0.0,0.0,1.0]}"#;
+        let config: TextConfig = serde_json::from_str(json).unwrap();
+        assert!((config.font_size - 12.0).abs() < f32::EPSILON);
+        assert!((config.color[0] - 1.0).abs() < f32::EPSILON);
+        assert!((config.color[1]).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn text_config_deserialize_missing_field_fails() {
+        let json = r#"{"font_size":12.0}"#;
+        let result = serde_json::from_str::<TextConfig>(json);
+        assert!(result.is_err());
+    }
+
+    // ---------------------------------------------------------------
+    // WindowConfig serde round-trip tests
+    // ---------------------------------------------------------------
+
+    #[test]
+    fn window_config_serde_json_round_trip() {
+        let config = WindowConfig {
+            width: 2560,
+            height: 1440,
+            title: "test window".to_owned(),
+            transparent: true,
+            decorations: false,
+        };
+        let json = serde_json::to_string(&config).unwrap();
+        let deserialized: WindowConfig = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.width, 2560);
+        assert_eq!(deserialized.height, 1440);
+        assert_eq!(deserialized.title, "test window");
+        assert!(deserialized.transparent);
+        assert!(!deserialized.decorations);
+    }
+
+    #[test]
+    fn window_config_deserialize_from_json_literal() {
+        let json = r#"{"width":640,"height":480,"title":"retro","transparent":false,"decorations":true}"#;
+        let config: WindowConfig = serde_json::from_str(json).unwrap();
+        assert_eq!(config.width, 640);
+        assert_eq!(config.height, 480);
+        assert_eq!(config.title, "retro");
+    }
+
+    // ---------------------------------------------------------------
+    // Clone + Debug trait tests
+    // ---------------------------------------------------------------
+
+    #[test]
+    fn text_config_clone_is_independent() {
+        let original = TextConfig {
+            font_size: 20.0,
+            line_height: 30.0,
+            color: [0.1, 0.2, 0.3, 0.4],
+        };
+        let mut cloned = original.clone();
+        cloned.font_size = 99.0;
+        // original must be unchanged
+        assert!((original.font_size - 20.0).abs() < f32::EPSILON);
+        assert!((cloned.font_size - 99.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn text_config_debug_contains_fields() {
+        let config = TextConfig::default();
+        let debug = format!("{config:?}");
+        assert!(debug.contains("font_size"));
+        assert!(debug.contains("line_height"));
+        assert!(debug.contains("color"));
+    }
+
+    #[test]
+    fn window_config_clone_is_independent() {
+        let original = WindowConfig {
+            width: 800,
+            height: 600,
+            title: "original".to_owned(),
+            transparent: false,
+            decorations: true,
+        };
+        let mut cloned = original.clone();
+        cloned.title = "cloned".to_owned();
+        cloned.width = 1024;
+        assert_eq!(original.title, "original");
+        assert_eq!(original.width, 800);
+        assert_eq!(cloned.title, "cloned");
+        assert_eq!(cloned.width, 1024);
+    }
+
+    #[test]
+    fn window_config_debug_contains_fields() {
+        let config = WindowConfig::default();
+        let debug = format!("{config:?}");
+        assert!(debug.contains("width"));
+        assert!(debug.contains("height"));
+        assert!(debug.contains("title"));
+        assert!(debug.contains("transparent"));
+        assert!(debug.contains("decorations"));
+    }
+
+    // ---------------------------------------------------------------
+    // TextLayout edge cases
+    // ---------------------------------------------------------------
+
+    #[test]
+    fn text_layout_with_unicode_text() {
+        let layout = TextLayout::new("硝子ガラス🪟", TextConfig::default(), 500.0);
+        assert_eq!(layout.text, "硝子ガラス🪟");
+    }
+
+    #[test]
+    fn text_layout_with_multiline_text() {
+        let text = "line one\nline two\nline three";
+        let layout = TextLayout::new(text, TextConfig::default(), 300.0);
+        assert_eq!(layout.text, text);
+        assert_eq!(layout.text.lines().count(), 3);
+    }
+
+    #[test]
+    fn text_layout_zero_max_width() {
+        let layout = TextLayout::new("narrow", TextConfig::default(), 0.0);
+        assert!((layout.max_width).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn text_layout_clone_is_independent() {
+        let original = TextLayout::new("hello", TextConfig::default(), 200.0);
+        let mut cloned = original.clone();
+        cloned.text = "world".to_owned();
+        cloned.max_width = 999.0;
+        assert_eq!(original.text, "hello");
+        assert!((original.max_width - 200.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn text_layout_debug_format() {
+        let layout = TextLayout::new("test", TextConfig::default(), 100.0);
+        let debug = format!("{layout:?}");
+        assert!(debug.contains("TextLayout"));
+        assert!(debug.contains("test"));
+        assert!(debug.contains("max_width"));
+    }
+
+    // ---------------------------------------------------------------
+    // GarasuError additional tests
+    // ---------------------------------------------------------------
+
+    #[test]
+    fn error_debug_format_contains_variant_name() {
+        let err = GarasuError::Gpu("test".to_owned());
+        let debug = format!("{err:?}");
+        assert!(debug.contains("Gpu"));
+        assert!(debug.contains("test"));
+    }
+
+    #[test]
+    fn error_source_io_variant_has_source() {
+        use std::error::Error;
+        let io_err = io::Error::new(io::ErrorKind::BrokenPipe, "pipe broke");
+        let err = GarasuError::Io(io_err);
+        // thiserror #[from] sets source() for the Io variant
+        assert!(err.source().is_some());
+    }
+
+    #[test]
+    fn error_source_non_io_variants_have_no_source() {
+        use std::error::Error;
+        let gpu_err = GarasuError::Gpu("test".to_owned());
+        let shader_err = GarasuError::Shader("test".to_owned());
+        let window_err = GarasuError::Window("test".to_owned());
+        assert!(gpu_err.source().is_none());
+        assert!(shader_err.source().is_none());
+        assert!(window_err.source().is_none());
+    }
+
+    // ---------------------------------------------------------------
+    // ShaderSource / ShaderConfig edge cases
+    // ---------------------------------------------------------------
+
+    #[test]
+    fn shader_source_clone_preserves_variant() {
+        let builtin = ShaderSource::Builtin("// code");
+        let inline = ShaderSource::Inline("// inline code".to_owned());
+        let file = ShaderSource::File(PathBuf::from("/tmp/shader.wgsl"));
+
+        let builtin_clone = builtin.clone();
+        let inline_clone = inline.clone();
+        let file_clone = file.clone();
+
+        assert!(matches!(builtin_clone, ShaderSource::Builtin("// code")));
+        assert!(matches!(inline_clone, ShaderSource::Inline(ref s) if s == "// inline code"));
+        assert!(matches!(file_clone, ShaderSource::File(ref p) if p == &PathBuf::from("/tmp/shader.wgsl")));
+    }
+
+    #[test]
+    fn shader_config_debug_format() {
+        let config = ShaderConfig {
+            name: "test_shader".to_owned(),
+            source: ShaderSource::Builtin("// test"),
+            enabled: false,
+        };
+        let debug = format!("{config:?}");
+        assert!(debug.contains("test_shader"));
+        assert!(debug.contains("Builtin"));
+        assert!(debug.contains("false"));
+    }
+
+    #[test]
+    fn shader_pipeline_preserves_insertion_order() {
+        let mut pipeline = ShaderPipeline::new();
+        pipeline.add_inline("z_last", "// z".to_owned());
+        pipeline.add_builtin("a_first", "// a");
+        pipeline.add_inline("m_middle", "// m".to_owned());
+        let names: Vec<&str> = pipeline.list().iter().map(|s| s.name.as_str()).collect();
+        // insertion order, not alphabetical
+        assert_eq!(names, vec!["z_last", "a_first", "m_middle"]);
+    }
+
+    #[test]
+    fn shader_pipeline_disable_all_yields_empty_active() {
+        let mut pipeline = ShaderPipeline::new();
+        pipeline.add_builtin("a", "// a");
+        pipeline.add_builtin("b", "// b");
+        pipeline.disable("a");
+        pipeline.disable("b");
+        assert!(pipeline.active().is_empty());
+        // but list still has them
+        assert_eq!(pipeline.len(), 2);
+    }
 }
