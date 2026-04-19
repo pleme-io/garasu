@@ -16,7 +16,7 @@ pub mod window;
 
 pub use context::GpuContext;
 pub use error::GarasuError;
-pub use shader::{ShaderConfig, ShaderPipeline, ShaderSource, BLUR_SHADER};
+pub use shader::{BLUR_SHADER, ShaderConfig, ShaderPipeline, ShaderSource};
 pub use text::{TextConfig, TextLayout, TextRenderer};
 pub use window::{AppWindow, WindowConfig};
 
@@ -57,7 +57,9 @@ mod tests {
     #[test]
     fn shader_pipeline_add_inline_and_get_source() {
         let mut pipeline = ShaderPipeline::new();
-        let wgsl = "@vertex fn vs_main() -> @builtin(position) vec4<f32> { return vec4<f32>(0.0); }".to_owned();
+        let wgsl =
+            "@vertex fn vs_main() -> @builtin(position) vec4<f32> { return vec4<f32>(0.0); }"
+                .to_owned();
         pipeline.add_inline("test", wgsl.clone());
         let source = pipeline.get_source("test").unwrap().unwrap();
         assert_eq!(source, wgsl);
@@ -81,7 +83,10 @@ mod tests {
         assert!(result.is_err());
         let err = result.unwrap_err();
         let msg = err.to_string();
-        assert!(msg.contains("not found"), "error should mention not found: {msg}");
+        assert!(
+            msg.contains("not found"),
+            "error should mention not found: {msg}"
+        );
         assert_eq!(pipeline.len(), 0);
     }
 
@@ -411,7 +416,8 @@ mod tests {
 
     #[test]
     fn window_config_deserialize_from_json_literal() {
-        let json = r#"{"width":640,"height":480,"title":"retro","transparent":false,"decorations":true}"#;
+        let json =
+            r#"{"width":640,"height":480,"title":"retro","transparent":false,"decorations":true}"#;
         let config: WindowConfig = serde_json::from_str(json).unwrap();
         assert_eq!(config.width, 640);
         assert_eq!(config.height, 480);
@@ -565,7 +571,9 @@ mod tests {
 
         assert!(matches!(builtin_clone, ShaderSource::Builtin("// code")));
         assert!(matches!(inline_clone, ShaderSource::Inline(ref s) if s == "// inline code"));
-        assert!(matches!(file_clone, ShaderSource::File(ref p) if p == &PathBuf::from("/tmp/shader.wgsl")));
+        assert!(
+            matches!(file_clone, ShaderSource::File(ref p) if p == &PathBuf::from("/tmp/shader.wgsl"))
+        );
     }
 
     #[test]

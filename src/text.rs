@@ -89,7 +89,12 @@ impl TextRenderer {
     pub fn create_buffer(&mut self, text: &str, font_size: f32, line_height: f32) -> Buffer {
         let metrics = Metrics::new(font_size, line_height);
         let mut buffer = Buffer::new(&mut self.font_system, metrics);
-        buffer.set_text(&mut self.font_system, text, &Attrs::new(), Shaping::Advanced);
+        buffer.set_text(
+            &mut self.font_system,
+            text,
+            &Attrs::new(),
+            Shaping::Advanced,
+        );
         buffer
     }
 
@@ -124,13 +129,7 @@ impl TextRenderer {
         height: u32,
         text_areas: impl IntoIterator<Item = TextArea<'a>>,
     ) -> Result<(), glyphon::PrepareError> {
-        self.viewport.update(
-            queue,
-            Resolution {
-                width,
-                height,
-            },
-        );
+        self.viewport.update(queue, Resolution { width, height });
 
         self.renderer.prepare(
             device,

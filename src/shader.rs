@@ -173,9 +173,7 @@ impl ShaderPipeline {
         Some(match &shader.source {
             ShaderSource::Builtin(s) => Ok((*s).to_owned()),
             ShaderSource::Inline(s) => Ok(s.clone()),
-            ShaderSource::File(path) => {
-                std::fs::read_to_string(path).map_err(GarasuError::Io)
-            }
+            ShaderSource::File(path) => std::fs::read_to_string(path).map_err(GarasuError::Io),
         })
     }
 
