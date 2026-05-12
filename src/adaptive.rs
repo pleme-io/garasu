@@ -437,4 +437,157 @@ mod tests {
         };
         assert!(posture.displays.iter().any(|d| d.refresh_hz.is_some_and(|hz| hz > 60)));
     }
+
+    #[test]
+    fn effective_refresh_none_when_no_displays() {
+        let posture = RuntimePosture {
+            displays: vec![],
+            gpu: None,
+            platform: detect_platform(),
+            high_refresh: false,
+        };
+        assert_eq!(posture.effective_refresh_hz(), None);
+    }
+
+    #[test]
+    fn effective_refresh_none_when_all_unknown() {
+        let posture = RuntimePosture {
+            displays: vec![Display {
+                name: None,
+                size: (1024, 768),
+                scale_factor: 1.0,
+                refresh_hz: None,
+                primary: true,
+            }],
+            gpu: None,
+            platform: detect_platform(),
+            high_refresh: false,
+        };
+        assert_eq!(posture.effective_refresh_hz(), None);
+    }
+
+    #[test]
+    fn recommend_falls_back_to_no_target_when_posture_has_no_refresh() {
+        let posture = make_posture(None);
+        let profile = RecommendationProfile {
+            fps_cap: Some(120),
+            battery_fps_cap: Some(60),
+            force_battery_mode: false,
+        };
+        let budget = recommend(&posture, &profile);
+        // Cap is irrelevant if there's no refresh to clamp.
+        assert_eq!(budget.fps_target, None);
+    }
+
+    #[test]
+    fn recommend_default_profile_returns_refresh_unclamped() {
+        let posture = make_posture(Some(360));
+        let budget = recommend(&posture, &RecommendationProfile::default());
+        assert_eq!(budget.fps_target, Some(360));
+        assert!(budget.vsync);
+    }
+
+    #[test]
+    fn recommendation_profile_serde_round_trip() {
+        let profile = RecommendationProfile {
+            fps_cap: Some(240),
+            battery_fps_cap: Some(60),
+            force_battery_mode: true,
+        };
+        let json = serde_json::to_string(&profile).unwrap();
+        let restored: RecommendationProfile = serde_json::from_str(&json).unwrap();
+        assert_eq!(restored, profile);
+    }
+
+    #[test]
+    fn recommendation_profile_default_via_serde() {
+        // Empty JSON object deserializes to default profile (every
+        // field None).
+        let profile: RecommendationProfile = serde_json::from_str("{}").unwrap();
+        assert_eq!(profile, RecommendationProfile::default());
+    }
+
+    #[test]
+    fn runtime_budget_serde_round_trip() {
+        let budget = RuntimeBudget {
+            fps_target: Some(120),
+            vsync: true,
+        };
+        let json = serde_json::to_string(&budget).unwrap();
+        let restored: RuntimeBudget = serde_json::from_str(&json).unwrap();
+        assert_eq!(restored, budget);
+    }
+
+    #[test]
+    fn display_serde_with_no_name_no_refresh() {
+        let display = Display {
+            name: None,
+            size: (1024, 768),
+            scale_factor: 1.5,
+            refresh_hz: None,
+            primary: false,
+        };
+        let json = serde_json::to_string(&display).unwrap();
+        let restored: Display = serde_json::from_str(&json).unwrap();
+        assert_eq!(restored, display);
+    }
+
+    #[test]
+    fn gpu_posture_serde_round_trip() {
+        let gpu = GpuPosture {
+            backend: "Vulkan".into(),
+            vendor: "0x1002".into(),
+            device_name: "AMD Radeon".into(),
+            device_type: "DiscreteGpu".into(),
+            max_texture_dimension_2d: 8192,
+        };
+        let json = serde_json::to_string(&gpu).unwrap();
+        let restored: GpuPosture = serde_json::from_str(&json).unwrap();
+        assert_eq!(restored, gpu);
+    }
+
+    #[test]
+    fn platform_serde_round_trip() {
+        let platform = Platform {
+            os: "linux".into(),
+            arch: "x86_64".into(),
+        };
+        let json = serde_json::to_string(&platform).unwrap();
+        let restored: Platform = serde_json::from_str(&json).unwrap();
+        assert_eq!(restored, platform);
+    }
+
+    #[test]
+    fn recommend_fps_cap_higher_than_refresh_does_not_inflate() {
+        // Cap above refresh is harmless — recommender clamps min, not max.
+        let posture = make_posture(Some(60));
+        let profile = RecommendationProfile {
+            fps_cap: Some(360),
+            ..Default::default()
+        };
+        let budget = recommend(&posture, &profile);
+        assert_eq!(budget.fps_target, Some(60));
+    }
+
+    #[test]
+    fn detect_displays_empty_iterator_returns_empty_vec() {
+        // Iterator-based API: callers can pass any iterator. Empty
+        // produces empty output, no panics.
+        let displays = detect_displays(Vec::<winit::monitor::MonitorHandle>::new(), None);
+        assert!(displays.is_empty());
+    }
+
+    #[test]
+    fn recommend_battery_mode_without_cap_falls_back_to_no_cap_at_all() {
+        // force_battery_mode without battery_fps_cap and without
+        // fps_cap means u32::MAX — refresh wins unclamped.
+        let posture = make_posture(Some(120));
+        let profile = RecommendationProfile {
+            fps_cap: None,
+            battery_fps_cap: None,
+            force_battery_mode: true,
+        };
+        let budget = recommend(&posture, &profile);
+        assert_eq!(budget.fps_target, Some(120));
+    }
 }
