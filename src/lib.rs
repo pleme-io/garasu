@@ -6,14 +6,22 @@
 //! - `TextConfig` / `TextLayout`: pure-data text configuration (testable without GPU)
 //! - `ShaderPipeline`: WGSL shader loading and management (testable without GPU)
 //! - `AppWindow` / `WindowConfig`: winit window creation with sensible defaults
+//! - `adaptive`: runtime posture detection + recommendation (fps, vsync,
+//!   display refresh, GPU caps) — consumed as a typed default layer
+//!   between hardcoded fallbacks and user config
 //! - `GarasuError`: unified error type
 
+pub mod adaptive;
 pub mod context;
 pub mod error;
 pub mod shader;
 pub mod text;
 pub mod window;
 
+pub use adaptive::{
+    Display as AdaptiveDisplay, GpuPosture, Platform, RecommendationProfile, RuntimeBudget,
+    RuntimePosture,
+};
 pub use context::GpuContext;
 pub use error::GarasuError;
 pub use shader::{BLUR_SHADER, ShaderConfig, ShaderPipeline, ShaderSource};
