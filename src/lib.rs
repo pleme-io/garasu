@@ -14,6 +14,7 @@
 pub mod adaptive;
 pub mod context;
 pub mod error;
+pub mod headless;
 pub mod shader;
 pub mod text;
 pub mod window;
