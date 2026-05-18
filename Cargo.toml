@@ -26,6 +26,9 @@ tracing = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "2.0"
 raw-window-handle = "0.6"
+# blake3 — content-addressable hash of pixel buffers for
+# headless golden tests. Pure-Rust default, no system deps.
+blake3 = "1"
 
 [dev-dependencies]
 tempfile = "3"
