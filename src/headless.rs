@@ -364,6 +364,113 @@ impl HeadlessHarness {
     }
 }
 
+/// N rotating [`HeadlessTarget`]s — a faithful simulation of the
+/// multi-buffered swapchain chain that real GPU surfaces present
+/// from. Each call to [`render_into_next`] picks the NEXT slot in
+/// round-robin order and hands its view to the render closure;
+/// after the render, [`read_pixels_rgba8`] returns that slot's
+/// pixels.
+///
+/// **Why this matters for testing:** a single-target headless
+/// harness ([`HeadlessHarness`]) catches "what does the render
+/// produce" bugs. It does NOT catch "what happens when render()
+/// is skipped" bugs, because the single target is never rotated
+/// — any skipped frame leaves last-render content in the same
+/// slot, and the test sees it as if the render happened.
+///
+/// On real macOS Metal swapchains (2–3 slots), a skipped render
+/// presents whatever was in a DIFFERENT slot the last time it
+/// was visited — which manifests visually as:
+///
+/// * **Stale slots → shadows / afterimages** (operator sees
+///   frames from N back as the chain rotates).
+/// * **Unwritten slots → magenta flash** (Metal's uninit state
+///   surfaces until the slot is first painted).
+///
+/// A `HeadlessSwapchain` reproduces the chain rotation
+/// deterministically. Tests that drive it can assert:
+///
+/// 1. After N renders to the same logical state, every slot's
+///    hash is identical (no stale slots).
+/// 2. No slot ever surfaces a magenta pixel (no uninit leakage).
+///
+/// Mado's damage-gate-skip bug (shadow + recurring purple flash,
+/// fixed in mado@044a206) would have been caught by a single
+/// invocation of "render twice, assert both slots hash equal."
+/// This primitive is the fleet-wide guard against that bug
+/// class.
+pub struct HeadlessSwapchain {
+    targets: Vec<HeadlessTarget>,
+    text: TextRenderer,
+    next_slot: usize,
+}
+
+impl HeadlessSwapchain {
+    /// Build `slot_count` rotating targets sized `width × height`.
+    /// macOS Metal commonly uses 2 or 3; pass 3 for the
+    /// worst-case (longest stale window) test.
+    #[must_use]
+    pub fn new(
+        gpu: &GpuContext,
+        slot_count: usize,
+        width: u32,
+        height: u32,
+        format: wgpu::TextureFormat,
+    ) -> Self {
+        assert!(slot_count >= 1, "swapchain needs at least one slot");
+        let targets = (0..slot_count)
+            .map(|_| HeadlessTarget::new(gpu, width, height, format))
+            .collect();
+        let text = TextRenderer::new(&gpu.device, &gpu.queue, format);
+        Self {
+            targets,
+            text,
+            next_slot: 0,
+        }
+    }
+
+    /// Render one frame into the next slot in round-robin order.
+    /// Returns the RGBA8 pixel buffer for that slot — which is
+    /// what `frame.present()` would have surfaced.
+    pub fn render_into_next<F>(&mut self, gpu: &GpuContext, render_fn: F) -> Vec<u8>
+    where
+        F: FnOnce(&mut TextRenderer, &wgpu::TextureView, u32, u32),
+    {
+        let slot = self.next_slot;
+        self.next_slot = (self.next_slot + 1) % self.targets.len();
+        let target = &self.targets[slot];
+        render_fn(&mut self.text, target.view(), target.width(), target.height());
+        let _ = gpu.device.poll(wgpu::PollType::Wait);
+        target.read_pixels_rgba8(gpu)
+    }
+
+    /// Number of slots in the chain.
+    #[must_use]
+    pub fn slot_count(&self) -> usize {
+        self.targets.len()
+    }
+
+    /// Width / height — same across all slots.
+    #[must_use]
+    pub fn width(&self) -> u32 {
+        self.targets[0].width()
+    }
+
+    #[must_use]
+    pub fn height(&self) -> u32 {
+        self.targets[0].height()
+    }
+
+    /// Read every slot's current pixels — used by tests that
+    /// want to assert "no slot ever surfaced uninit state".
+    pub fn read_all_slots_rgba8(&self, gpu: &GpuContext) -> Vec<Vec<u8>> {
+        self.targets
+            .iter()
+            .map(|t| t.read_pixels_rgba8(gpu))
+            .collect()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -499,6 +606,120 @@ mod tests {
         assert_eq!(pixels.len(), 64 * 64 * 4);
         // Should be flagged as magenta.
         assert!(assert_no_magenta_pixels(&pixels, 64, 64).is_err());
+    }
+
+    #[cfg(feature = "gpu_tests")]
+    #[test]
+    fn headless_swapchain_rotates_slots_round_robin() {
+        // Render 6 frames into a 3-slot chain; assert each slot
+        // got hit exactly twice. Catches "every render hits the
+        // same slot" implementation bugs.
+        let gpu = pollster::block_on(GpuContext::new()).expect("gpu");
+        let mut chain = HeadlessSwapchain::new(
+            &gpu,
+            3,
+            16,
+            16,
+            wgpu::TextureFormat::Rgba8UnormSrgb,
+        );
+        // Render six frames, each with a slot-distinct clear color.
+        // Slot 0 → red, slot 1 → green, slot 2 → blue; second pass
+        // same. After 6 renders, slot N holds the LAST color
+        // written to it (red / green / blue).
+        let colors = [
+            wgpu::Color { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+            wgpu::Color { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+            wgpu::Color { r: 0.0, g: 0.0, b: 1.0, a: 1.0 },
+        ];
+        for i in 0..6 {
+            let c = colors[i % 3];
+            chain.render_into_next(&gpu, |_text, view, _w, _h| {
+                let mut enc = gpu.device.create_command_encoder(
+                    &wgpu::CommandEncoderDescriptor { label: None },
+                );
+                {
+                    let _ = enc.begin_render_pass(&wgpu::RenderPassDescriptor {
+                        label: None,
+                        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                            view,
+                            resolve_target: None,
+                            ops: wgpu::Operations {
+                                load: wgpu::LoadOp::Clear(c),
+                                store: wgpu::StoreOp::Store,
+                            },
+                        })],
+                        depth_stencil_attachment: None,
+                        timestamp_writes: None,
+                        occlusion_query_set: None,
+                    });
+                }
+                gpu.queue.submit(std::iter::once(enc.finish()));
+            });
+        }
+        let slots = chain.read_all_slots_rgba8(&gpu);
+        // Slot 0 ended up with red (rounds 0, 3); slot 1 green
+        // (1, 4); slot 2 blue (2, 5). Inspect pixel 0 of each.
+        // Texture is Rgba8UnormSrgb so we look at the un-gamma'd
+        // value; clearing to (1, 0, 0) yields ~(255, 0, 0).
+        assert_eq!(slots[0][0..3], [255, 0, 0]);
+        assert_eq!(slots[1][0..3], [0, 255, 0]);
+        assert_eq!(slots[2][0..3], [0, 0, 255]);
+    }
+
+    #[cfg(feature = "gpu_tests")]
+    #[test]
+    fn headless_swapchain_clear_only_renders_yield_identical_per_slot_hashes() {
+        // The regression test that would have caught mado's
+        // damage-gate bug. Render twice into a 3-slot chain; the
+        // first render lands in slot 0, the second in slot 1.
+        // If we re-render the SAME state once more, that lands
+        // in slot 2 — all three slots should hash equal.
+        let gpu = pollster::block_on(GpuContext::new()).expect("gpu");
+        let mut chain = HeadlessSwapchain::new(
+            &gpu,
+            3,
+            32,
+            32,
+            wgpu::TextureFormat::Rgba8UnormSrgb,
+        );
+        let nord = wgpu::Color { r: 0.180, g: 0.204, b: 0.251, a: 1.0 };
+        let render_one = |gpu: &GpuContext, c: &mut HeadlessSwapchain| -> Vec<u8> {
+            c.render_into_next(gpu, |_text, view, _w, _h| {
+                let mut enc = gpu
+                    .device
+                    .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+                {
+                    let _ = enc.begin_render_pass(&wgpu::RenderPassDescriptor {
+                        label: None,
+                        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                            view,
+                            resolve_target: None,
+                            ops: wgpu::Operations {
+                                load: wgpu::LoadOp::Clear(nord),
+                                store: wgpu::StoreOp::Store,
+                            },
+                        })],
+                        depth_stencil_attachment: None,
+                        timestamp_writes: None,
+                        occlusion_query_set: None,
+                    });
+                }
+                gpu.queue.submit(std::iter::once(enc.finish()));
+            })
+        };
+        // Three renders fill every slot.
+        let a = render_one(&gpu, &mut chain);
+        let b = render_one(&gpu, &mut chain);
+        let c = render_one(&gpu, &mut chain);
+        assert_eq!(frame_hash(&a), frame_hash(&b));
+        assert_eq!(frame_hash(&b), frame_hash(&c));
+        // And every slot is magenta-clean.
+        for (i, slot) in chain.read_all_slots_rgba8(&gpu).into_iter().enumerate() {
+            assert!(
+                assert_no_magenta_pixels(&slot, chain.width(), chain.height()).is_ok(),
+                "slot {i} surfaced magenta after 3 full renders — uninit-leakage regression"
+            );
+        }
     }
 
     #[cfg(feature = "gpu_tests")]
