@@ -64,17 +64,85 @@ pub struct TextRenderer {
     pub viewport: Viewport,
 }
 
+// ── font preload registry ──────────────────────────────────────
+//
+// cosmic-text's `FontSystem::new()` scans every system font on
+// first call (≈150–250 ms on macOS). The scan is independent of
+// wgpu init and tear discovery, so we kick it off on a background
+// thread at the earliest possible moment in the consumer's main()
+// and `TextRenderer::new` later just `join()`s the handle.
+//
+// On a fresh launch where mado calls `garasu::preload_fonts()`
+// before tear setup, the 174 ms FontSystem cost overlaps with
+// the ~80 ms of tear discovery + window create + wgpu init —
+// total launch shrinks by ~80 ms.
+
+static FONT_PRELOAD: std::sync::OnceLock<
+    std::sync::Mutex<Option<std::thread::JoinHandle<FontSystem>>>,
+> = std::sync::OnceLock::new();
+
+/// Begin loading the system font database on a background thread.
+/// Idempotent — calling more than once is a no-op. Called by
+/// consumers (mado, etc.) at the very start of `main` so the
+/// 150-250 ms cosmic-text font scan overlaps with everything
+/// else that happens before the first text render.
+pub fn preload_fonts() {
+    let lock = FONT_PRELOAD.get_or_init(|| std::sync::Mutex::new(None));
+    let mut guard = lock.lock().expect("font preload mutex poisoned");
+    if guard.is_none() {
+        let started = std::time::Instant::now();
+        *guard = Some(
+            std::thread::Builder::new()
+                .name("garasu-font-preload".into())
+                .spawn(move || {
+                    let fs = FontSystem::new();
+                    let ms = started.elapsed().as_millis() as u64;
+                    tracing::info!(
+                        target: "garasu::text",
+                        ms,
+                        "font preload thread finished"
+                    );
+                    fs
+                })
+                .expect("spawn font preload thread"),
+        );
+    }
+}
+
+/// Take the preloaded `FontSystem` if `preload_fonts()` was
+/// called, otherwise build one synchronously. Used by
+/// `TextRenderer::new`.
+fn take_or_build_font_system() -> FontSystem {
+    if let Some(lock) = FONT_PRELOAD.get() {
+        if let Some(handle) = lock.lock().expect("font preload mutex poisoned").take() {
+            return handle
+                .join()
+                .expect("font preload thread panicked");
+        }
+    }
+    // No preload — build synchronously.
+    FontSystem::new()
+}
+
 impl TextRenderer {
     /// Create a new text renderer for the given device and texture format.
     #[must_use]
     pub fn new(device: &wgpu::Device, queue: &wgpu::Queue, format: wgpu::TextureFormat) -> Self {
-        let font_system = FontSystem::new();
+        let t_start = std::time::Instant::now();
+        let font_system = take_or_build_font_system();
+        let t_font = t_start.elapsed();
         let swash_cache = SwashCache::new();
         let cache = Cache::new(device);
         let viewport = Viewport::new(device, &cache);
         let mut atlas = TextAtlas::new(device, queue, &cache, format);
         let renderer =
             GlyphonRenderer::new(&mut atlas, device, wgpu::MultisampleState::default(), None);
+        tracing::info!(
+            target: "garasu::text",
+            font_system_ms = t_font.as_millis() as u64,
+            total_ms = t_start.elapsed().as_millis() as u64,
+            "text renderer built"
+        );
 
         Self {
             font_system,

@@ -26,7 +26,7 @@ pub use adaptive::{
 pub use context::GpuContext;
 pub use error::GarasuError;
 pub use shader::{BLUR_SHADER, ShaderConfig, ShaderPipeline, ShaderSource};
-pub use text::{TextConfig, TextLayout, TextRenderer};
+pub use text::{preload_fonts, TextConfig, TextLayout, TextRenderer};
 pub use window::{AppWindow, WindowConfig};
 
 #[cfg(test)]
