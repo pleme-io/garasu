@@ -29,6 +29,11 @@ raw-window-handle = "0.6"
 # blake3 — content-addressable hash of pixel buffers for
 # headless golden tests. Pure-Rust default, no system deps.
 blake3 = "1"
+# Persistent fontdb cache (font_cache.rs) — skip 150-250 ms
+# of system-font scanning on every cold start.
+fontdb = "0.16"
+bincode = "1.3"
+dirs = "6"
 
 [dev-dependencies]
 tempfile = "3"
