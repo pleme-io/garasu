@@ -20,6 +20,10 @@ missing_panics_doc = "allow"
 [dependencies]
 wgpu = "25"
 winit = "0.30"
+# Instanced GPU pipelines (quad.rs) need #[repr(C)] Pod/Zeroable structs
+# uploaded as raw bytes. bytemuck is wgpu's own vertex-data crate; pin
+# the same major it already pulls in transitively.
+bytemuck = { version = "1", features = ["derive"] }
 glyphon = "0.9"
 pollster = "0.4"
 tracing = "0.1"
