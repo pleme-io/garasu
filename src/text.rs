@@ -100,41 +100,13 @@ pub fn preload_fonts() {
             std::thread::Builder::new()
                 .name("garasu-font-preload".into())
                 .spawn(move || {
-                    // Try the on-disk cache first. On hit, build a
-                    // FontSystem from the cached fontdb in ~5-15 ms.
-                    if let Some(db) = crate::font_cache::try_load_cached_db() {
-                        let locale = sys_locale_string();
-                        let fs = FontSystem::new_with_locale_and_db(locale, db);
-                        tracing::info!(
-                            target: "garasu::text",
-                            ms = started.elapsed().as_millis() as u64,
-                            cache_hit = true,
-                            "font preload thread finished"
-                        );
-                        return fs;
-                    }
-                    // Cache miss — full scan, then persist for next
-                    // run. We have to do the scan via the canonical
-                    // FontSystem::new() (which calls
-                    // db.load_system_fonts()) so cosmic-text picks
-                    // up its monospace/sans/serif defaults; we then
-                    // pull the populated db out via a workaround:
-                    // build the FontSystem, snapshot its db via
-                    // a fresh scan on the side, and save.
-                    let fs = FontSystem::new();
-                    // Independent scan for caching. The duplicate
-                    // load is ~zero cost compared to the saved time
-                    // on the NEXT run, and avoids touching
-                    // FontSystem's internals.
-                    {
-                        let mut db = fontdb::Database::new();
-                        db.load_system_fonts();
-                        crate::font_cache::save_cache(&db);
-                    }
+                    // One path for both cache hit + miss; guarantees the
+                    // color-emoji fallback and keeps the cache a faithful
+                    // system-font snapshot. See `build_font_system_scanned`.
+                    let fs = build_font_system_scanned();
                     tracing::info!(
                         target: "garasu::text",
                         ms = started.elapsed().as_millis() as u64,
-                        cache_hit = false,
                         "font preload thread finished"
                     );
                     fs
@@ -142,6 +114,116 @@ pub fn preload_fonts() {
                 .expect("spawn font preload thread"),
         );
     }
+}
+
+// ── color-emoji fallback guarantee ──────────────────────────────
+//
+// On a host WITHOUT a system color-emoji font (minimal Linux, a CI
+// container, a Nix sandbox), cosmic-text resolves emoji codepoints to
+// `.notdef` and the consumer paints an fg-tinted tofu box — the
+// 2026-06-23 "red crab" report (the prompt's 🦀 Rust segment). We make
+// color emoji render on EVERY host by guaranteeing an emoji-capable
+// face is in the db before the FontSystem is built:
+//
+//   1. build-time embed — when `GARASU_EMOJI_FONT` was set at build
+//      (the Nix build points it at nixpkgs `noto-fonts-color-emoji`),
+//      `build.rs` bakes the bytes in; the binary is self-contained and
+//      needs no font files on the runtime host.
+//   2. runtime discovery — otherwise probe a small set of well-known
+//      emoji-font locations and load the first that exists.
+//
+// If the db already carries an emoji family (macOS Apple Color Emoji,
+// a Nix-installed Noto on the font path), this is a no-op — the system
+// font always wins.
+
+#[cfg(garasu_bundled_emoji)]
+const BUNDLED_EMOJI_FONT: &[u8] = include_bytes!(env!("GARASU_EMOJI_FONT_PATH"));
+
+/// Well-known color-emoji font paths probed at runtime when no font was
+/// embedded at build time and the host scan found no emoji family.
+/// Noto first (the small 10 MB color font); Apple Color Emoji last (a
+/// 192 MB `.ttc` only reached on a macOS box whose scan somehow missed
+/// it — in practice never, since macOS always has it in the scan).
+const EMOJI_FALLBACK_PATHS: &[&str] = &[
+    "/usr/share/fonts/noto/NotoColorEmoji.ttf",
+    "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
+    "/usr/share/fonts/google-noto-emoji/NotoColorEmoji.ttf",
+    "/run/current-system/sw/share/X11/fonts/NotoColorEmoji.ttf",
+    "/System/Library/Fonts/Apple Color Emoji.ttc",
+];
+
+/// True when the db carries a color-emoji-capable family — the exact
+/// signal cosmic-text's per-glyph fallback needs to resolve an emoji
+/// codepoint instead of returning `.notdef`.
+fn db_has_emoji(db: &fontdb::Database) -> bool {
+    db.faces().any(|f| {
+        f.families
+            .iter()
+            .any(|(name, _)| name.to_lowercase().contains("emoji"))
+    })
+}
+
+/// Ensure `db` carries a color-emoji face. No-op (returns `false`) when
+/// one is already present. Returns `true` when a fallback was loaded.
+/// Tries the build-time embed first, then runtime discovery — so a
+/// Nix-built binary is self-contained and a plain `cargo`-built one
+/// still finds a system Noto/Apple font when present.
+fn ensure_emoji_fallback(db: &mut fontdb::Database) -> bool {
+    if db_has_emoji(db) {
+        return false;
+    }
+    #[cfg(garasu_bundled_emoji)]
+    if !BUNDLED_EMOJI_FONT.is_empty() {
+        db.load_font_data(BUNDLED_EMOJI_FONT.to_vec());
+        tracing::info!(
+            target: "garasu::text",
+            source = "bundled",
+            "loaded color-emoji fallback font"
+        );
+        return true;
+    }
+    for path in EMOJI_FALLBACK_PATHS {
+        if let Ok(bytes) = std::fs::read(path) {
+            db.load_font_data(bytes);
+            tracing::info!(
+                target: "garasu::text",
+                source = %path,
+                "loaded color-emoji fallback font"
+            );
+            return true;
+        }
+    }
+    tracing::debug!(
+        target: "garasu::text",
+        "no color-emoji fallback available — emoji may render as tofu"
+    );
+    false
+}
+
+/// Build a `FontSystem` from the system font scan (cache-backed),
+/// guaranteeing a color-emoji fallback before construction. The single
+/// place both the preload thread and the synchronous path route
+/// through, so the emoji guarantee + cache behaviour can't drift apart.
+///
+/// Cache contract: only the *system* scan is persisted (the emoji
+/// fallback is re-applied on every build from the embed / system path,
+/// never cached), so the on-disk cache stays a faithful snapshot of the
+/// host's own fonts.
+fn build_font_system_scanned() -> FontSystem {
+    let locale = sys_locale_string();
+    // Cache hit — reconstruct the system db, then add the emoji fallback.
+    if let Some(mut db) = crate::font_cache::try_load_cached_db() {
+        ensure_emoji_fallback(&mut db);
+        return FontSystem::new_with_locale_and_db(locale, db);
+    }
+    // Cache miss — one system scan (the old path scanned twice: once via
+    // `FontSystem::new()` and again to populate the cache). Persist the
+    // system-only db, then add the emoji fallback for this process.
+    let mut db = fontdb::Database::new();
+    db.load_system_fonts();
+    crate::font_cache::save_cache(&db);
+    ensure_emoji_fallback(&mut db);
+    FontSystem::new_with_locale_and_db(locale, db)
 }
 
 /// Locale string for cosmic-text. Mirrors what `FontSystem::new()`
@@ -166,8 +248,8 @@ fn take_or_build_font_system() -> FontSystem {
                 .expect("font preload thread panicked");
         }
     }
-    // No preload — build synchronously.
-    FontSystem::new()
+    // No preload — build synchronously (same emoji-guaranteed path).
+    build_font_system_scanned()
 }
 
 impl TextRenderer {
@@ -369,6 +451,55 @@ mod color_emoji_regression {
             "{} color-emoji row(s) failed:\n  - {}",
             failures.len(),
             failures.join("\n  - ")
+        );
+    }
+
+    /// The bare-host guarantee: starting from a db with NO system
+    /// fonts (a minimal Linux/CI container / Nix sandbox),
+    /// `ensure_emoji_fallback` must add an emoji family AND make 🦀
+    /// resolve to a real glyph — via the build-time embed
+    /// (`GARASU_EMOJI_FONT`) or a discovered system Noto/Apple font.
+    /// This is the test that proves the emoji-less-host gap is closed.
+    /// Skips loudly only when neither an embed nor any known system
+    /// emoji font exists (then there is genuinely nothing to load).
+    #[test]
+    fn emoji_fallback_closes_bare_host_gap() {
+        let mut db = fontdb::Database::new();
+        assert!(!super::db_has_emoji(&db), "fresh empty db has no emoji family");
+
+        let loaded = super::ensure_emoji_fallback(&mut db);
+        if !loaded {
+            eprintln!(
+                "SKIP emoji_fallback_closes_bare_host_gap: no build-time embed \
+                 and no system emoji font on this host — nothing to fall back to."
+            );
+            return;
+        }
+        assert!(
+            super::db_has_emoji(&db),
+            "ensure_emoji_fallback must add a color-emoji family"
+        );
+        let mut fs = FontSystem::new_with_locale_and_db("en-US".to_string(), db);
+        let gid = first_glyph(&mut fs, "🦀").unwrap_or(0);
+        assert_ne!(gid, 0, "🦀 must resolve via the fallback font, not .notdef");
+    }
+
+    /// `ensure_emoji_fallback` is a no-op when the db already has an
+    /// emoji family — the host's own font always wins (no double-load,
+    /// no overriding Apple Color Emoji with a bundled Noto).
+    #[test]
+    fn emoji_fallback_is_noop_when_host_has_emoji() {
+        let fs = FontSystem::new();
+        if !has_emoji_font(&fs) {
+            eprintln!("SKIP emoji_fallback_is_noop_when_host_has_emoji: emoji-less host");
+            return;
+        }
+        let mut db = fontdb::Database::new();
+        db.load_system_fonts();
+        assert!(super::db_has_emoji(&db), "host scan carries an emoji family");
+        assert!(
+            !super::ensure_emoji_fallback(&mut db),
+            "fallback must be a no-op when the host already has emoji"
         );
     }
 
