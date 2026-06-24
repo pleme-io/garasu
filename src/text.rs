@@ -200,6 +200,45 @@ fn ensure_emoji_fallback(db: &mut fontdb::Database) -> bool {
     false
 }
 
+/// Explicitly load Nix-managed font directories into `db`.
+///
+/// `fontdb::load_system_fonts` scans the OS-standard dirs (and, on
+/// Linux, fontconfig) — but a font installed by Nix (`home.packages` /
+/// a module's `extraPackages` / NixOS `fonts.packages`) lands in a Nix
+/// profile that the OS scan misses, most notably the **nix-darwin
+/// per-user profile** (`/etc/profiles/per-user/$USER/share/fonts`).
+/// Loading these dirs explicitly is what makes a Nix-declared emoji
+/// font (mado's `extraPackages = [ "noto-fonts-color-emoji" ]`)
+/// discoverable on every Nix platform — closing the loop between the
+/// declared dependency and the font the renderer actually sees.
+/// `load_fonts_dir` is recursive and a no-op for a missing dir.
+fn load_nix_font_dirs(db: &mut fontdb::Database) {
+    let mut dirs: Vec<std::path::PathBuf> = vec![
+        // System profiles (NixOS + nix-darwin).
+        "/run/current-system/sw/share/fonts".into(),
+        "/run/current-system/sw/share/X11/fonts".into(),
+    ];
+    if let Some(user) = std::env::var_os("USER") {
+        // nix-darwin per-user profile — where `extraPackages` lands.
+        dirs.push(
+            std::path::Path::new("/etc/profiles/per-user")
+                .join(&user)
+                .join("share/fonts"),
+        );
+    }
+    if let Some(home) = dirs::home_dir() {
+        // Classic single-user Nix + Linux home-manager profile.
+        dirs.push(home.join(".nix-profile/share/fonts"));
+        dirs.push(home.join(".local/state/nix/profiles/profile/share/fonts"));
+    }
+    for dir in dirs {
+        if dir.is_dir() {
+            db.load_fonts_dir(&dir);
+            tracing::debug!(target: "garasu::text", dir = %dir.display(), "loaded nix font dir");
+        }
+    }
+}
+
 /// Build a `FontSystem` from the system font scan (cache-backed),
 /// guaranteeing a color-emoji fallback before construction. The single
 /// place both the preload thread and the synchronous path route
@@ -211,17 +250,20 @@ fn ensure_emoji_fallback(db: &mut fontdb::Database) -> bool {
 /// host's own fonts.
 fn build_font_system_scanned() -> FontSystem {
     let locale = sys_locale_string();
-    // Cache hit — reconstruct the system db, then add the emoji fallback.
+    // Cache hit — reconstruct the system db, then layer Nix font dirs +
+    // the emoji fallback (both re-applied every build, never cached).
     if let Some(mut db) = crate::font_cache::try_load_cached_db() {
+        load_nix_font_dirs(&mut db);
         ensure_emoji_fallback(&mut db);
         return FontSystem::new_with_locale_and_db(locale, db);
     }
     // Cache miss — one system scan (the old path scanned twice: once via
     // `FontSystem::new()` and again to populate the cache). Persist the
-    // system-only db, then add the emoji fallback for this process.
+    // system-only db, then layer Nix font dirs + the emoji fallback.
     let mut db = fontdb::Database::new();
     db.load_system_fonts();
     crate::font_cache::save_cache(&db);
+    load_nix_font_dirs(&mut db);
     ensure_emoji_fallback(&mut db);
     FontSystem::new_with_locale_and_db(locale, db)
 }
