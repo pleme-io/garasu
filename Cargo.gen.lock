@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "cargo_lock_sha256": "75d034d81ccf2696a676191c3435e7ad32235f3fa56cd0c2f063aef2bfb60bfd",
+  "cargo_lock_sha256": "4c9518ead70a6c6ef749860d244ddaec06696b71581cb371bab8da8d08680018",
   "target_resolves": {
     "base": {
       "arrayref-0.3.9": {
@@ -8,7 +8,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "arrayvec-0.7.6": {
+      "arrayvec-0.7.7": {
         "runtime_dependencies": [],
         "build_dependencies": [],
         "features": []
@@ -133,7 +133,7 @@
           },
           {
             "name": "quote",
-            "package_key": "quote-1.0.45",
+            "package_key": "quote-1.0.46",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -143,7 +143,7 @@
           },
           {
             "name": "syn",
-            "package_key": "syn-2.0.117",
+            "package_key": "syn-2.0.118",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -155,7 +155,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "cc-1.2.64": {
+      "cc-1.2.65": {
         "runtime_dependencies": [
           {
             "name": "find_msvc_tools",
@@ -273,7 +273,7 @@
           },
           {
             "name": "log",
-            "package_key": "log-0.4.32",
+            "package_key": "log-0.4.33",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -624,7 +624,7 @@
           "std"
         ]
       },
-      "garasu-0.1.1": {
+      "garasu-0.1.2": {
         "runtime_dependencies": [
           {
             "name": "bincode",
@@ -766,7 +766,7 @@
           "default"
         ]
       },
-      "getrandom-0.4.2": {
+      "getrandom-0.4.3": {
         "runtime_dependencies": [
           {
             "name": "cfg_if",
@@ -1125,22 +1125,11 @@
             "optional": false,
             "target": null,
             "tree": "target"
-          },
-          {
-            "name": "serde_core",
-            "package_key": "serde_core-1.0.228",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": false,
-            "optional": true,
-            "target": null,
-            "tree": "target"
           }
         ],
         "build_dependencies": [],
         "features": [
           "default",
-          "serde",
           "std"
         ]
       },
@@ -1272,7 +1261,7 @@
           "default"
         ]
       },
-      "log-0.4.32": {
+      "log-0.4.33": {
         "runtime_dependencies": [],
         "build_dependencies": [],
         "features": []
@@ -1291,7 +1280,7 @@
           "std"
         ]
       },
-      "memmap2-0.9.10": {
+      "memmap2-0.9.11": {
         "runtime_dependencies": [
           {
             "name": "libc",
@@ -1311,7 +1300,7 @@
         "runtime_dependencies": [
           {
             "name": "arrayvec",
-            "package_key": "arrayvec-0.7.6",
+            "package_key": "arrayvec-0.7.7",
             "kind": "normal",
             "features": [],
             "uses_default_features": false,
@@ -1399,7 +1388,7 @@
           },
           {
             "name": "log",
-            "package_key": "log-0.4.32",
+            "package_key": "log-0.4.33",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1670,7 +1659,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "quote-1.0.45": {
+      "quote-1.0.46": {
         "runtime_dependencies": [
           {
             "name": "proc_macro2",
@@ -1932,7 +1921,7 @@
           },
           {
             "name": "quote",
-            "package_key": "quote-1.0.45",
+            "package_key": "quote-1.0.46",
             "kind": "normal",
             "features": [
               "proc-macro"
@@ -1944,7 +1933,7 @@
           },
           {
             "name": "syn",
-            "package_key": "syn-2.0.117",
+            "package_key": "syn-2.0.118",
             "kind": "normal",
             "features": [
               "clone-impls",
@@ -2149,7 +2138,7 @@
           },
           {
             "name": "quote",
-            "package_key": "quote-1.0.45",
+            "package_key": "quote-1.0.46",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2169,7 +2158,7 @@
           },
           {
             "name": "syn",
-            "package_key": "syn-2.0.117",
+            "package_key": "syn-2.0.118",
             "kind": "normal",
             "features": [
               "extra-traits",
@@ -2229,7 +2218,7 @@
           "std"
         ]
       },
-      "syn-2.0.117": {
+      "syn-2.0.118": {
         "runtime_dependencies": [
           {
             "name": "proc_macro2",
@@ -2243,7 +2232,7 @@
           },
           {
             "name": "quote",
-            "package_key": "quote-1.0.45",
+            "package_key": "quote-1.0.46",
             "kind": "normal",
             "features": [],
             "uses_default_features": false,
@@ -2295,7 +2284,7 @@
           },
           {
             "name": "getrandom",
-            "package_key": "getrandom-0.4.2",
+            "package_key": "getrandom-0.4.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": false,
@@ -2372,7 +2361,7 @@
           },
           {
             "name": "quote",
-            "package_key": "quote-1.0.45",
+            "package_key": "quote-1.0.46",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2382,7 +2371,7 @@
           },
           {
             "name": "syn",
-            "package_key": "syn-2.0.117",
+            "package_key": "syn-2.0.118",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2474,7 +2463,7 @@
           },
           {
             "name": "quote",
-            "package_key": "quote-1.0.45",
+            "package_key": "quote-1.0.46",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2484,7 +2473,7 @@
           },
           {
             "name": "syn",
-            "package_key": "syn-2.0.117",
+            "package_key": "syn-2.0.118",
             "kind": "normal",
             "features": [
               "clone-impls",
@@ -2607,7 +2596,7 @@
         "runtime_dependencies": [
           {
             "name": "arrayvec",
-            "package_key": "arrayvec-0.7.6",
+            "package_key": "arrayvec-0.7.7",
             "kind": "normal",
             "features": [],
             "uses_default_features": false,
@@ -2650,7 +2639,7 @@
           },
           {
             "name": "log",
-            "package_key": "log-0.4.32",
+            "package_key": "log-0.4.33",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2842,7 +2831,7 @@
           },
           {
             "name": "log",
-            "package_key": "log-0.4.32",
+            "package_key": "log-0.4.33",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2927,7 +2916,7 @@
           },
           {
             "name": "quote",
-            "package_key": "quote-1.0.45",
+            "package_key": "quote-1.0.46",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2937,7 +2926,7 @@
           },
           {
             "name": "syn",
-            "package_key": "syn-2.0.117",
+            "package_key": "syn-2.0.118",
             "kind": "normal",
             "features": [
               "full"
@@ -2981,7 +2970,7 @@
               },
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -3013,7 +3002,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.2.64",
+                "package_key": "cc-1.2.65",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -3195,7 +3184,7 @@
             "runtime_dependencies": [
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -3205,7 +3194,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -3305,7 +3294,7 @@
               },
               {
                 "name": "quote",
-                "package_key": "quote-1.0.45",
+                "package_key": "quote-1.0.46",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -3315,7 +3304,7 @@
               },
               {
                 "name": "syn",
-                "package_key": "syn-2.0.117",
+                "package_key": "syn-2.0.118",
                 "kind": "normal",
                 "features": [
                   "full"
@@ -3396,7 +3385,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -3899,7 +3888,7 @@
             "runtime_dependencies": [
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -3972,7 +3961,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -4143,7 +4132,7 @@
             "runtime_dependencies": [
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -4315,7 +4304,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -4817,7 +4806,7 @@
               },
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -4849,7 +4838,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.2.64",
+                "package_key": "cc-1.2.65",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -4877,7 +4866,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -5036,7 +5025,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -5046,7 +5035,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -5580,7 +5569,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -5590,7 +5579,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -5690,7 +5679,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -5700,7 +5689,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -5774,7 +5763,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [
                   "client",
@@ -5860,7 +5849,7 @@
               },
               {
                 "name": "quote",
-                "package_key": "quote-1.0.45",
+                "package_key": "quote-1.0.46",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -5870,7 +5859,7 @@
               },
               {
                 "name": "syn",
-                "package_key": "syn-2.0.117",
+                "package_key": "syn-2.0.118",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -5896,7 +5885,7 @@
               },
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -5928,7 +5917,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -6068,7 +6057,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.2.64",
+                "package_key": "cc-1.2.65",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -6204,7 +6193,7 @@
             "build_dependencies": [],
             "features": []
           },
-          "wayland-protocols-0.32.12": {
+          "wayland-protocols-0.32.13": {
             "runtime_dependencies": [
               {
                 "name": "bitflags",
@@ -6289,7 +6278,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -6348,7 +6337,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -6397,7 +6386,7 @@
               },
               {
                 "name": "quote",
-                "package_key": "quote-1.0.45",
+                "package_key": "quote-1.0.46",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -6423,7 +6412,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -6464,7 +6453,7 @@
             "runtime_dependencies": [
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -6537,7 +6526,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -6711,7 +6700,7 @@
             "runtime_dependencies": [
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -6863,7 +6852,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -7062,7 +7051,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -7173,7 +7162,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [
                   "staging"
@@ -7444,7 +7433,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -7615,7 +7604,7 @@
               },
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -7647,7 +7636,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.2.64",
+                "package_key": "cc-1.2.65",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -7675,7 +7664,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -7834,7 +7823,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -7844,7 +7833,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -8378,7 +8367,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -8388,7 +8377,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -8488,7 +8477,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -8498,7 +8487,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -8572,7 +8561,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [
                   "client",
@@ -8658,7 +8647,7 @@
               },
               {
                 "name": "quote",
-                "package_key": "quote-1.0.45",
+                "package_key": "quote-1.0.46",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -8668,7 +8657,7 @@
               },
               {
                 "name": "syn",
-                "package_key": "syn-2.0.117",
+                "package_key": "syn-2.0.118",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -8694,7 +8683,7 @@
               },
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -8726,7 +8715,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -8866,7 +8855,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.2.64",
+                "package_key": "cc-1.2.65",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -9002,7 +8991,7 @@
             "build_dependencies": [],
             "features": []
           },
-          "wayland-protocols-0.32.12": {
+          "wayland-protocols-0.32.13": {
             "runtime_dependencies": [
               {
                 "name": "bitflags",
@@ -9087,7 +9076,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -9146,7 +9135,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -9195,7 +9184,7 @@
               },
               {
                 "name": "quote",
-                "package_key": "quote-1.0.45",
+                "package_key": "quote-1.0.46",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -9221,7 +9210,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -9262,7 +9251,7 @@
             "runtime_dependencies": [
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -9335,7 +9324,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -9509,7 +9498,7 @@
             "runtime_dependencies": [
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -9661,7 +9650,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -9860,7 +9849,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -9971,7 +9960,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [
                   "staging"
@@ -10242,7 +10231,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -10306,7 +10295,7 @@
               },
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -10348,7 +10337,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.2.64",
+                "package_key": "cc-1.2.65",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -10535,7 +10524,7 @@
             "runtime_dependencies": [
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -10545,7 +10534,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -10645,7 +10634,7 @@
               },
               {
                 "name": "quote",
-                "package_key": "quote-1.0.45",
+                "package_key": "quote-1.0.46",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -10655,7 +10644,7 @@
               },
               {
                 "name": "syn",
-                "package_key": "syn-2.0.117",
+                "package_key": "syn-2.0.118",
                 "kind": "normal",
                 "features": [
                   "full"
@@ -10736,7 +10725,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -11239,7 +11228,7 @@
             "runtime_dependencies": [
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -11312,7 +11301,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -11483,7 +11472,7 @@
             "runtime_dependencies": [
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -11655,7 +11644,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -12157,7 +12146,7 @@
               },
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -12199,7 +12188,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.2.64",
+                "package_key": "cc-1.2.65",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -12227,7 +12216,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -12391,7 +12380,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -12401,7 +12390,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -12935,7 +12924,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -12945,7 +12934,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13045,7 +13034,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13055,7 +13044,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13129,7 +13118,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [
                   "client",
@@ -13215,7 +13204,7 @@
               },
               {
                 "name": "quote",
-                "package_key": "quote-1.0.45",
+                "package_key": "quote-1.0.46",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13225,7 +13214,7 @@
               },
               {
                 "name": "syn",
-                "package_key": "syn-2.0.117",
+                "package_key": "syn-2.0.118",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13251,7 +13240,7 @@
               },
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -13283,7 +13272,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13423,7 +13412,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.2.64",
+                "package_key": "cc-1.2.65",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -13559,7 +13548,7 @@
             "build_dependencies": [],
             "features": []
           },
-          "wayland-protocols-0.32.12": {
+          "wayland-protocols-0.32.13": {
             "runtime_dependencies": [
               {
                 "name": "bitflags",
@@ -13644,7 +13633,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13703,7 +13692,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13752,7 +13741,7 @@
               },
               {
                 "name": "quote",
-                "package_key": "quote-1.0.45",
+                "package_key": "quote-1.0.46",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13778,7 +13767,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13819,7 +13808,7 @@
             "runtime_dependencies": [
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -13892,7 +13881,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -14066,7 +14055,7 @@
             "runtime_dependencies": [
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -14218,7 +14207,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -14417,7 +14406,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -14528,7 +14517,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [
                   "staging"
@@ -14799,7 +14788,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -14970,7 +14959,7 @@
               },
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -15012,7 +15001,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.2.64",
+                "package_key": "cc-1.2.65",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -15040,7 +15029,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -15204,7 +15193,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -15214,7 +15203,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -15748,7 +15737,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -15758,7 +15747,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -15858,7 +15847,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -15868,7 +15857,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -15942,7 +15931,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [
                   "client",
@@ -16028,7 +16017,7 @@
               },
               {
                 "name": "quote",
-                "package_key": "quote-1.0.45",
+                "package_key": "quote-1.0.46",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -16038,7 +16027,7 @@
               },
               {
                 "name": "syn",
-                "package_key": "syn-2.0.117",
+                "package_key": "syn-2.0.118",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -16064,7 +16053,7 @@
               },
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -16096,7 +16085,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -16236,7 +16225,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.2.64",
+                "package_key": "cc-1.2.65",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -16372,7 +16361,7 @@
             "build_dependencies": [],
             "features": []
           },
-          "wayland-protocols-0.32.12": {
+          "wayland-protocols-0.32.13": {
             "runtime_dependencies": [
               {
                 "name": "bitflags",
@@ -16457,7 +16446,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -16516,7 +16505,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -16565,7 +16554,7 @@
               },
               {
                 "name": "quote",
-                "package_key": "quote-1.0.45",
+                "package_key": "quote-1.0.46",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -16591,7 +16580,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -16632,7 +16621,7 @@
             "runtime_dependencies": [
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -16705,7 +16694,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -16879,7 +16868,7 @@
             "runtime_dependencies": [
               {
                 "name": "arrayvec",
-                "package_key": "arrayvec-0.7.6",
+                "package_key": "arrayvec-0.7.7",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -17031,7 +17020,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -17230,7 +17219,7 @@
               },
               {
                 "name": "memmap2",
-                "package_key": "memmap2-0.9.10",
+                "package_key": "memmap2-0.9.11",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -17341,7 +17330,7 @@
               },
               {
                 "name": "wayland_protocols",
-                "package_key": "wayland-protocols-0.32.12",
+                "package_key": "wayland-protocols-0.32.13",
                 "kind": "normal",
                 "features": [
                   "staging"
@@ -17612,7 +17601,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.32",
+                "package_key": "log-0.4.33",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -17669,7 +17658,7 @@
     "arrayref-0.3.9": {
       "edition": "2015"
     },
-    "arrayvec-0.7.6": {
+    "arrayvec-0.7.7": {
       "edition": "2018"
     },
     "as-raw-xcb-connection-1.0.1": {
@@ -17720,7 +17709,7 @@
     "calloop-wayland-source-0.3.0": {
       "edition": "2021"
     },
-    "cc-1.2.64": {
+    "cc-1.2.65": {
       "edition": "2018"
     },
     "cfg-if-1.0.4": {
@@ -17822,7 +17811,7 @@
     "foreign-types-shared-0.3.1": {
       "edition": "2018"
     },
-    "garasu-0.1.1": {
+    "garasu-0.1.2": {
       "edition": "2024",
       "lib_target": {
         "name": "garasu",
@@ -17836,7 +17825,7 @@
       "edition": "2021",
       "build_script": "build.rs"
     },
-    "getrandom-0.4.2": {
+    "getrandom-0.4.3": {
       "edition": "2024",
       "build_script": "build.rs"
     },
@@ -17909,7 +17898,7 @@
     "lock_api-0.4.14": {
       "edition": "2021"
     },
-    "log-0.4.32": {
+    "log-0.4.33": {
       "edition": "2021"
     },
     "lru-0.12.5": {
@@ -17921,7 +17910,7 @@
     "memchr-2.8.2": {
       "edition": "2021"
     },
-    "memmap2-0.9.10": {
+    "memmap2-0.9.11": {
       "edition": "2021"
     },
     "metal-0.31.0": {
@@ -18016,7 +18005,7 @@
     "quick-xml-0.39.4": {
       "edition": "2021"
     },
-    "quote-1.0.45": {
+    "quote-1.0.46": {
       "edition": "2021",
       "build_script": "build.rs"
     },
@@ -18134,7 +18123,7 @@
     "swash-0.2.9": {
       "edition": "2021"
     },
-    "syn-2.0.117": {
+    "syn-2.0.118": {
       "edition": "2021"
     },
     "sys-locale-0.3.2": {
@@ -18237,8 +18226,8 @@
     "wayland-cursor-0.31.14": {
       "edition": "2021"
     },
-    "wayland-protocols-0.32.12": {
-      "edition": "2021"
+    "wayland-protocols-0.32.13": {
+      "edition": "2024"
     },
     "wayland-protocols-plasma-0.3.12": {
       "edition": "2021"
