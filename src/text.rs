@@ -264,3 +264,153 @@ impl TextRenderer {
         self.renderer.render(&self.atlas, &self.viewport, pass)
     }
 }
+
+#[cfg(test)]
+mod color_emoji_regression {
+    //! Regression guards for color-emoji rendering through garasu's
+    //! text stack (cosmic-text resolve → swash raster → glyphon).
+    //!
+    //! Why these exist: a fleet operator read the prompt's Rust
+    //! segment 🦀 (red-orange crab, styled "bold red" by seki) as a
+    //! "broken red glyph" (2026-06-23). Investigation proved the
+    //! pipeline is correct — 🦀 resolves to the host emoji font AND
+    //! rasterizes as `SwashContent::Color`, so glyphon paints the
+    //! real emoji, not an fg-tinted mask. These tests LOCK that:
+    //!   * a cosmic-text / swash bump that drops sbix/COLR support,
+    //!   * a `font_cache` format change that drops `.ttc`/emoji faces,
+    //! would silently turn every color emoji into a red mask again.
+    //! Each test is a forcing-function that fails the build instead.
+    //!
+    //! Host-gating: the assertions only run when the host actually
+    //! has a color-emoji font (true on macOS / the darwin fleet). On
+    //! an emoji-less host (minimal Linux CI) they skip loudly rather
+    //! than fail — the *separate*, genuine gap of bundling a fallback
+    //! emoji font for emoji-less hosts is tracked in the repo's font
+    //! TODO, not papered over by a flaky assert here.
+
+    use glyphon::cosmic_text::{CacheKey, SwashContent};
+    use glyphon::{Attrs, Buffer, FontSystem, Metrics, Shaping, SwashCache};
+
+    /// Color emoji that every test asserts as a matrix row. All are
+    /// pure-emoji codepoints (no text-presentation variant) so a
+    /// correct stack MUST resolve + color-raster them.
+    const COLOR_EMOJI: &[(&str, &str)] = &[
+        ("crab", "🦀"),
+        ("fire", "🔥"),
+        ("rocket", "🚀"),
+        ("check", "✅"),
+    ];
+
+    /// True when the db carries a color-emoji-capable family. Mirrors
+    /// the cosmic-text fallback the renderer relies on.
+    fn has_emoji_font(fs: &FontSystem) -> bool {
+        fs.db().faces().any(|f| {
+            f.families
+                .iter()
+                .any(|(n, _)| n.to_lowercase().contains("emoji"))
+        })
+    }
+
+    /// Resolve `s` to its first glyph: `Some(glyph_id)` (0 == .notdef).
+    fn first_glyph(fs: &mut FontSystem, s: &str) -> Option<u16> {
+        let mut buf = Buffer::new(fs, Metrics::new(16.0, 20.0));
+        buf.set_text(fs, s, &Attrs::new(), Shaping::Advanced);
+        buf.shape_until_scroll(fs, false);
+        buf.layout_runs().flat_map(|r| r.glyphs.iter()).map(|g| g.glyph_id).next()
+    }
+
+    /// The full-pipeline invariant: on an emoji-capable host, every
+    /// color emoji resolves to a real glyph AND rasterizes as
+    /// `SwashContent::Color` (so glyphon paints the emoji, not an
+    /// fg-tinted mask). Matrix: failures aggregate into one assert.
+    #[test]
+    fn color_emoji_resolve_and_raster_as_color() {
+        let mut fs = FontSystem::new();
+        if !has_emoji_font(&fs) {
+            eprintln!(
+                "SKIP color_emoji_resolve_and_raster_as_color: host has no \
+                 color-emoji font (minimal Linux/CI). The emoji-less-host \
+                 fallback-font gap is tracked separately."
+            );
+            return;
+        }
+        let mut swash = SwashCache::new();
+        let mut failures = Vec::new();
+        for &(name, glyph) in COLOR_EMOJI {
+            let Some(gid) = first_glyph(&mut fs, glyph) else {
+                failures.push(format!("{name} {glyph}: no glyph produced"));
+                continue;
+            };
+            if gid == 0 {
+                failures.push(format!("{name} {glyph}: resolved to .notdef"));
+                continue;
+            }
+            // Raster the glyph and confirm a Color image.
+            let mut buf = Buffer::new(&mut fs, Metrics::new(16.0, 20.0));
+            buf.set_text(&mut fs, glyph, &Attrs::new(), Shaping::Advanced);
+            buf.shape_until_scroll(&mut fs, false);
+            let key: Option<CacheKey> = buf
+                .layout_runs()
+                .flat_map(|r| r.glyphs.iter())
+                .map(|g| g.physical((0.0, 0.0), 1.0).cache_key)
+                .next();
+            match key.and_then(|k| swash.get_image(&mut fs, k).clone()) {
+                Some(img) if img.content == SwashContent::Color && !img.data.is_empty() => {}
+                Some(img) => failures.push(format!(
+                    "{name} {glyph}: rastered as {:?} ({} bytes), expected non-empty Color",
+                    img.content,
+                    img.data.len()
+                )),
+                None => failures.push(format!("{name} {glyph}: no raster image")),
+            }
+        }
+        assert!(
+            failures.is_empty(),
+            "{} color-emoji row(s) failed:\n  - {}",
+            failures.len(),
+            failures.join("\n  - ")
+        );
+    }
+
+    /// The `font_cache` save→reload round-trip MUST preserve emoji
+    /// resolution. The cache serializes a lossy `CachedFace`
+    /// projection and reconstructs the db via `push_face_info`; a
+    /// future field drop that loses `.ttc` index / emoji families
+    /// would regress every color emoji to .notdef. This locks it.
+    #[test]
+    fn font_cache_roundtrip_preserves_emoji_resolution() {
+        let mut fresh = FontSystem::new();
+        if !has_emoji_font(&fresh) {
+            eprintln!(
+                "SKIP font_cache_roundtrip_preserves_emoji_resolution: host \
+                 has no color-emoji font (minimal Linux/CI)."
+            );
+            return;
+        }
+        // Baseline glyph ids from the fresh scan.
+        let baseline: Vec<(&str, u16)> = COLOR_EMOJI
+            .iter()
+            .map(|&(name, g)| (name, first_glyph(&mut fresh, g).unwrap_or(0)))
+            .collect();
+
+        // Round-trip the db through the on-disk cache reconstruction.
+        crate::font_cache::save_cache(fresh.db());
+        let db = crate::font_cache::try_load_cached_db()
+            .expect("cache just saved must reload (schema + fingerprint match)");
+        let mut reloaded = FontSystem::new_with_locale_and_db("en-US".to_string(), db);
+
+        let mut failures = Vec::new();
+        for (name, want) in baseline {
+            let got = first_glyph(&mut reloaded, COLOR_EMOJI.iter().find(|e| e.0 == name).unwrap().1)
+                .unwrap_or(0);
+            if got == 0 {
+                failures.push(format!("{name}: .notdef after cache round-trip (was {want})"));
+            }
+        }
+        assert!(
+            failures.is_empty(),
+            "cache round-trip dropped emoji resolution:\n  - {}",
+            failures.join("\n  - ")
+        );
+    }
+}
