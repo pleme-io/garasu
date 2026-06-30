@@ -281,8 +281,10 @@ fn sys_locale_string() -> String {
 
 /// Take the preloaded `FontSystem` if `preload_fonts()` was
 /// called, otherwise build one synchronously. Used by
-/// `TextRenderer::new`.
-fn take_or_build_font_system() -> FontSystem {
+/// `TextRenderer::new` and `crate::layers::TextLayerStack::new`
+/// (the single font-build path, so the emoji-fallback +
+/// Nix-font-dir + preload-cache contract can't drift between them).
+pub(crate) fn take_or_build_font_system() -> FontSystem {
     if let Some(lock) = FONT_PRELOAD.get() {
         if let Some(handle) = lock.lock().expect("font preload mutex poisoned").take() {
             return handle

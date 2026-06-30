@@ -33,7 +33,7 @@
 //! assert_eq!(pixels.len(), 800 * 600 * 4);
 //! ```
 
-use crate::{GpuContext, TextRenderer};
+use crate::{GpuContext, TextLayerStack};
 
 /// Off-screen render target with a typed texture + view + format
 /// triple and synchronous pixel readback. Hand the [`view`] to a
@@ -301,12 +301,12 @@ pub fn cell_center_pixel(
 /// assert!(assert_no_magenta_pixels(&pixels, 800, 600).is_ok());
 /// ```
 ///
-/// The harness owns the `TextRenderer` because most consumers
+/// The harness owns the `TextLayerStack` because most consumers
 /// need one; the closure receives a fully-populated
 /// `RenderContext` matching what the live winit loop builds.
 pub struct HeadlessHarness {
     target: HeadlessTarget,
-    text: TextRenderer,
+    text: TextLayerStack,
 }
 
 impl HeadlessHarness {
@@ -322,12 +322,12 @@ impl HeadlessHarness {
         format: wgpu::TextureFormat,
     ) -> Self {
         let target = HeadlessTarget::new(gpu, width, height, format);
-        let text = TextRenderer::new(&gpu.device, &gpu.queue, format);
+        let text = TextLayerStack::new(&gpu.device, &gpu.queue, format);
         Self { target, text }
     }
 
     /// Run one frame and return the resulting RGBA8 pixel buffer.
-    /// `render_fn` receives a fully-populated [`crate::text::TextRenderer`]
+    /// `render_fn` receives a fully-populated [`crate::layers::TextLayerStack`]
     /// borrow and the same `TextureView` + dimensions that the live
     /// renderer would see; build a `madori::RenderContext` (or
     /// equivalent) from these and call the consumer's render entry.
@@ -336,7 +336,7 @@ impl HeadlessHarness {
     /// returned buffer reflects exactly what the pipeline produced.
     pub fn render_one_frame<F>(&mut self, gpu: &GpuContext, render_fn: F) -> Vec<u8>
     where
-        F: FnOnce(&mut TextRenderer, &wgpu::TextureView, u32, u32),
+        F: FnOnce(&mut TextLayerStack, &wgpu::TextureView, u32, u32),
     {
         render_fn(
             &mut self.text,
@@ -401,7 +401,7 @@ impl HeadlessHarness {
 /// class.
 pub struct HeadlessSwapchain {
     targets: Vec<HeadlessTarget>,
-    text: TextRenderer,
+    text: TextLayerStack,
     next_slot: usize,
 }
 
@@ -421,7 +421,7 @@ impl HeadlessSwapchain {
         let targets = (0..slot_count)
             .map(|_| HeadlessTarget::new(gpu, width, height, format))
             .collect();
-        let text = TextRenderer::new(&gpu.device, &gpu.queue, format);
+        let text = TextLayerStack::new(&gpu.device, &gpu.queue, format);
         Self {
             targets,
             text,
@@ -434,7 +434,7 @@ impl HeadlessSwapchain {
     /// what `frame.present()` would have surfaced.
     pub fn render_into_next<F>(&mut self, gpu: &GpuContext, render_fn: F) -> Vec<u8>
     where
-        F: FnOnce(&mut TextRenderer, &wgpu::TextureView, u32, u32),
+        F: FnOnce(&mut TextLayerStack, &wgpu::TextureView, u32, u32),
     {
         let slot = self.next_slot;
         self.next_slot = (self.next_slot + 1) % self.targets.len();

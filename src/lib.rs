@@ -15,6 +15,7 @@ pub mod adaptive;
 pub mod context;
 pub mod error;
 pub mod headless;
+pub mod layers;
 pub mod quad;
 pub mod shader;
 pub mod text;
@@ -29,6 +30,7 @@ pub use error::GarasuError;
 pub use quad::{QuadInstance, QuadPipeline};
 pub use shader::{BLUR_SHADER, ShaderConfig, ShaderPipeline, ShaderSource};
 pub mod font_cache;
+pub use layers::{Frame, PreparedLayer, TextLayerId, TextLayerStack};
 pub use text::{preload_fonts, TextConfig, TextLayout, TextRenderer};
 pub use window::{AppWindow, WindowConfig};
 
