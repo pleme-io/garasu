@@ -1,43 +1,11 @@
 {
   description = "Garasu (硝子) — GPU rendering engine: wgpu pipeline, text rendering, shader system, and winit integration";
 
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-25.11";
-    substrate = {
-      url = "github:pleme-io/substrate";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    crate2nix.url = "github:nix-community/crate2nix";
+  # substrate.rust.library dispatches over Cargo.gen.lock (the slim gen delta,
+  # reconstructed to the full BuildSpec in pure Nix) — no crate2nix, no Cargo.nix.
+  inputs.substrate.url = "github:pleme-io/substrate";
+
+  outputs = { substrate, ... }: substrate.rust.library {
+    src = ./.;
   };
-
-  outputs =
-    {
-      self,
-      nixpkgs,
-      substrate,
-      crate2nix,
-      ...
-    }:
-    let
-      system = "aarch64-darwin";
-      pkgs = import nixpkgs { inherit system; };
-      rustLibrary = import "${substrate}/lib/rust-library.nix" {
-        inherit system nixpkgs;
-        nixLib = substrate;
-        inherit crate2nix;
-      };
-      lib = rustLibrary {
-        name = "garasu";
-        src = ./.;
-      };
-    in
-    {
-      inherit (lib) packages devShells apps;
-
-      overlays.default = final: prev: {
-        garasu = self.packages.${final.system}.default;
-      };
-
-      formatter.${system} = pkgs.nixfmt-tree;
-    };
 }
