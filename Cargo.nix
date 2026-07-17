@@ -1695,7 +1695,7 @@ rec {
       };
       "garasu" = rec {
         crateName = "garasu";
-        version = "0.1.4";
+        version = "0.1.5";
         edition = "2024";
         src = lib.cleanSourceWith { filter = sourceFilter;  src = ./.; };
         dependencies = [
