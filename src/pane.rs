@@ -158,6 +158,33 @@ impl PaneRect {
         px >= self.x && px < self.x + self.w && py >= self.y && py < self.y + self.h
     }
 
+    /// The glyphon clip for text drawn into this pane.
+    ///
+    /// ★ **This is the single cheapest fix for text bleed, and it needs no
+    /// GPU work at all.** glyphon clips per-glyph on the CPU at prepare
+    /// time — it clamps each quad and shifts its UVs — and calls
+    /// `set_scissor_rect` zero times. So the clipping mechanism for TEXT
+    /// already exists and already works; it is simply being handed the
+    /// wrong rectangle. Every `TextArea` in mado currently carries
+    /// full-window bounds, which is why a long unwrapped line crosses a
+    /// pane seam.
+    ///
+    /// Replacing those bounds with this is a one-line change per call site
+    /// and stops all text bleed before any of the rect-pipeline work
+    /// below.
+    #[must_use]
+    pub fn text_bounds(self) -> glyphon::TextBounds {
+        // i32 saturation rather than a wrapping cast: a pane wider than
+        // i32::MAX is not a real window, but wrapping it would produce a
+        // NEGATIVE bound and silently clip everything away.
+        glyphon::TextBounds {
+            left: i32::try_from(self.x).unwrap_or(i32::MAX),
+            top: i32::try_from(self.y).unwrap_or(i32::MAX),
+            right: i32::try_from(self.x.saturating_add(self.w)).unwrap_or(i32::MAX),
+            bottom: i32::try_from(self.y.saturating_add(self.h)).unwrap_or(i32::MAX),
+        }
+    }
+
     /// Translate pane-local coordinates (origin `0,0`) into target
     /// coordinates.
     ///
@@ -370,6 +397,18 @@ mod tests {
                 "column {x} is claimed by both panes or by neither"
             );
         }
+    }
+
+    #[test]
+    fn text_bounds_match_the_pane_and_are_half_open_like_contains() {
+        let (l, r) = ROOT.split_x(300).unwrap();
+        let lb = l.text_bounds();
+        assert_eq!((lb.left, lb.top, lb.right, lb.bottom), (0, 0, 300, 600));
+        let rb = r.text_bounds();
+        assert_eq!((rb.left, rb.top, rb.right, rb.bottom), (300, 0, 800, 600));
+        // The seam is shared: left's exclusive right edge IS right's
+        // inclusive left edge, so no column is clipped by both or neither.
+        assert_eq!(lb.right, rb.left);
     }
 
     #[test]
