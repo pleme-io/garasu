@@ -234,6 +234,17 @@ impl ShapeRequest {
         let metrics = Metrics::new(self.font_size(), self.line_height());
         let mut buffer = Buffer::new(fs, metrics);
 
+        // Size FIRST, then text. `set_text` lays out at the buffer's current
+        // width, and `set_size` re-lays out on any change — so setting the
+        // text first and the size second runs the whole line-breaking pass
+        // TWICE for every wrapped run. Shaping itself is retained across the
+        // two (cosmic-text keeps `shape_opt`), but the layout pass is not.
+        let (w, h) = match self.wrap {
+            Some((w, h)) => (Some(f32::from_bits(w)), Some(f32::from_bits(h))),
+            None => (None, None),
+        };
+        buffer.set_size(fs, w, h);
+
         let attrs: Vec<(&str, Attrs<'_>)> =
             self.spans.iter().map(|s| (&*s.text, s.attrs())).collect();
         buffer.set_rich_text(
@@ -243,12 +254,6 @@ impl ShapeRequest {
             Shaping::Advanced,
             None,
         );
-
-        let (w, h) = match self.wrap {
-            Some((w, h)) => (Some(f32::from_bits(w)), Some(f32::from_bits(h))),
-            None => (None, None),
-        };
-        buffer.set_size(fs, w, h);
         buffer.shape_until_scroll(fs, false);
 
         // Measure while the buffer is hot — a caller that centres or
@@ -288,10 +293,32 @@ pub struct ShapedText {
 }
 
 /// Default entry cap. Sized for a UI frame's live strings plus several
-/// frames of variation, not for a document: a browser page's runs are
-/// unbounded in principle, and an LRU with no cap is a memory leak wearing
-/// a cache's clothes.
+/// frames of variation, not for a document.
 pub const DEFAULT_CAPACITY: usize = 1024;
+
+/// Default retained-byte budget (32 MiB).
+///
+/// An entry count alone is NOT a memory bound here, and that difference is
+/// the whole reason this cache carries a second limit. A terminal's cached
+/// runs are cells — tens to hundreds of bytes — so mado can bound its own
+/// cache at 4096 entries and call it a few MB. A browser's cached runs are
+/// paragraphs: cosmic-text retains both the shaped glyphs and the laid-out
+/// glyphs per line (`ShapeGlyph` ~90 B, `LayoutGlyph` ~80 B), so a
+/// 2000-character paragraph is on the order of 400 KB. 4096 of those is
+/// multiple gigabytes.
+///
+/// So eviction is bounded by BOTH: entries and estimated retained bytes,
+/// whichever binds first.
+pub const DEFAULT_BYTE_BUDGET: usize = 32 * 1024 * 1024;
+
+/// Estimated retained bytes per character of shaped text.
+///
+/// cosmic-text keeps `shape_opt` AND `layout_opt` per line, so a character
+/// costs roughly one `ShapeGlyph` (~90 B) plus one `LayoutGlyph` (~80 B)
+/// plus the source text and per-line overhead. Deliberately an
+/// over-estimate: budgeting low and evicting early is a performance cost,
+/// budgeting high and evicting late is an out-of-memory.
+const BYTES_PER_CHAR: usize = 200;
 
 /// A bounded LRU of shaped text.
 ///
@@ -302,19 +329,39 @@ pub const DEFAULT_CAPACITY: usize = 1024;
 /// field borrows, instead of having to restructure ownership.
 pub struct ShapeCache {
     inner: RefCell<lru::LruCache<ShapeRequest, Arc<ShapedText>>>,
+    /// Estimated retained bytes currently held.
+    bytes: Cell<usize>,
+    byte_budget: usize,
     hits: Cell<u64>,
     misses: Cell<u64>,
 }
 
 impl ShapeCache {
-    /// A cache holding at most `capacity` shaped entries.
+    /// A cache holding at most `capacity` shaped entries, within the default
+    /// byte budget.
     #[must_use]
     pub fn new(capacity: NonZeroUsize) -> Self {
+        Self::with_byte_budget(capacity, DEFAULT_BYTE_BUDGET)
+    }
+
+    /// A cache bounded by BOTH an entry count and an estimated retained-byte
+    /// budget, whichever binds first. Reach for this when the cached text is
+    /// document-sized rather than UI-sized.
+    #[must_use]
+    pub fn with_byte_budget(capacity: NonZeroUsize, byte_budget: usize) -> Self {
         Self {
             inner: RefCell::new(lru::LruCache::new(capacity)),
+            bytes: Cell::new(0),
+            byte_budget,
             hits: Cell::new(0),
             misses: Cell::new(0),
         }
+    }
+
+    /// Estimated retained bytes currently held.
+    #[must_use]
+    pub fn bytes(&self) -> usize {
+        self.bytes.get()
     }
 
     /// Return the shaped text for `req`, shaping it only on a miss.
@@ -325,9 +372,29 @@ impl ShapeCache {
         }
         self.misses.set(self.misses.get() + 1);
         let shaped = Arc::new(req.build(fs));
-        self.inner
-            .borrow_mut()
-            .put(req.clone(), Arc::clone(&shaped));
+        let cost = req.text_len() * BYTES_PER_CHAR;
+        {
+            let mut inner = self.inner.borrow_mut();
+            // `put` on an existing key replaces it; subtract the old cost so
+            // the running total tracks what is actually held.
+            if let Some(old) = inner.put(req.clone(), Arc::clone(&shaped)) {
+                let _ = old;
+            }
+            self.bytes.set(self.bytes.get().saturating_add(cost));
+            // Evict least-recently-used until inside the byte budget. Always
+            // keep at least the entry just inserted, or a single run larger
+            // than the whole budget would evict itself and the cache would
+            // miss forever on it while doing all the eviction work.
+            while self.bytes.get() > self.byte_budget && inner.len() > 1 {
+                match inner.pop_lru() {
+                    Some((k, _)) => {
+                        let freed = k.text_len() * BYTES_PER_CHAR;
+                        self.bytes.set(self.bytes.get().saturating_sub(freed));
+                    }
+                    None => break,
+                }
+            }
+        }
         shaped
     }
 
@@ -356,6 +423,7 @@ impl ShapeCache {
     /// shaped against.
     pub fn clear(&self) {
         self.inner.borrow_mut().clear();
+        self.bytes.set(0);
     }
 }
 
@@ -554,6 +622,52 @@ mod tests {
         let s = req("").build(&mut fs);
         assert_eq!(s.lines, 1);
         assert!(s.height > 0.0);
+    }
+
+    /// The byte budget is the bound that actually matters for a browser: an
+    /// entry COUNT is not a memory bound when one entry can be a paragraph.
+    #[test]
+    fn byte_budget_evicts_before_the_entry_count_does() {
+        let mut fs = fs();
+        // Room for 100 entries but only ~2 KB — the bytes must bind first.
+        let c = ShapeCache::with_byte_budget(NonZeroUsize::new(100).unwrap(), 2_000);
+        let big = "x".repeat(50); // 50 chars * 200 B = 10 KB estimated
+        for i in 0..5 {
+            let mut t = big.clone();
+            t.push_str(&i.to_string());
+            let _ = c.shaped(&mut fs, &req(&t));
+        }
+        assert!(
+            c.len() < 5,
+            "the byte budget should have evicted; {} entries held",
+            c.len(),
+        );
+        assert!(c.len() >= 1, "the just-inserted entry always survives");
+    }
+
+    /// A single run larger than the whole budget must still be served — if it
+    /// evicted itself the cache would miss on it forever while paying all the
+    /// eviction work.
+    #[test]
+    fn an_entry_larger_than_the_budget_still_survives() {
+        let mut fs = fs();
+        let c = ShapeCache::with_byte_budget(NonZeroUsize::new(100).unwrap(), 100);
+        let huge = "y".repeat(500);
+        let _ = c.shaped(&mut fs, &req(&huge));
+        assert_eq!(c.len(), 1);
+        let before = c.stats().1;
+        let _ = c.shaped(&mut fs, &req(&huge));
+        assert_eq!(c.stats().1, before, "the oversized entry must still hit");
+    }
+
+    #[test]
+    fn clear_resets_the_byte_total() {
+        let mut fs = fs();
+        let c = ShapeCache::default();
+        let _ = c.shaped(&mut fs, &req("hello"));
+        assert!(c.bytes() > 0);
+        c.clear();
+        assert_eq!(c.bytes(), 0);
     }
 
     #[test]
