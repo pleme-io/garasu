@@ -19,6 +19,7 @@ pub mod layers;
 pub mod pane;
 pub mod quad;
 pub mod shader;
+pub mod shape_cache;
 pub mod text;
 pub mod window;
 
@@ -29,6 +30,9 @@ pub use adaptive::{
 pub use context::GpuContext;
 pub use error::GarasuError;
 pub use quad::{QuadInstance, QuadPipeline};
+pub use shape_cache::{
+    FamilyKey, ShapeCache, ShapeRequest, ShapeSpan, ShapedText, DEFAULT_CAPACITY,
+};
 pub use shader::{BLUR_SHADER, ShaderConfig, ShaderPipeline, ShaderSource};
 pub mod font_cache;
 pub use layers::{Frame, PreparedLayer, TextLayerId, TextLayerStack};

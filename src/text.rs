@@ -62,6 +62,13 @@ pub struct TextRenderer {
     pub atlas: TextAtlas,
     pub renderer: GlyphonRenderer,
     pub viewport: Viewport,
+    /// Shaped-text cache. Shaping is the expensive half of drawing text and
+    /// a render loop redraws continuously, so a consumer that builds a fresh
+    /// `Buffer` per string per frame re-does all of it every frame for glyph
+    /// positions that have not changed. Reach for
+    /// [`TextRenderer::shaped`] instead of `create_buffer` on any string
+    /// that survives more than one frame.
+    pub shape_cache: crate::shape_cache::ShapeCache,
 }
 
 // ── font preload registry ──────────────────────────────────────
@@ -318,6 +325,7 @@ impl TextRenderer {
 
         Self {
             font_system,
+            shape_cache: crate::shape_cache::ShapeCache::default(),
             swash_cache,
             atlas,
             renderer,
@@ -325,7 +333,28 @@ impl TextRenderer {
         }
     }
 
+    /// Shape `req`, or return the cached result if it has been shaped before.
+    ///
+    /// The preferred way to produce text in a render loop. Unlike
+    /// [`Self::create_buffer`], repeated frames cost a hash lookup rather
+    /// than a full cosmic-text shaping pass, and the returned
+    /// [`ShapedText`](crate::shape_cache::ShapedText) carries the measured
+    /// width/height so a caller centring or right-aligning does not re-walk
+    /// the layout runs every frame either.
+    pub fn shaped(
+        &mut self,
+        req: &crate::shape_cache::ShapeRequest,
+    ) -> std::sync::Arc<crate::shape_cache::ShapedText> {
+        // Two DISJOINT field borrows of `self`: the cache by shared ref (it
+        // is interior-mutable for exactly this reason) and the font system by
+        // unique ref. That split is why `ShapeCache::shaped` takes `&self`.
+        self.shape_cache.shaped(&mut self.font_system, req)
+    }
+
     /// Create a text buffer with the given content and metrics.
+    ///
+    /// Uncached: every call re-shapes. Prefer [`Self::shaped`] for anything
+    /// drawn more than once.
     pub fn create_buffer(&mut self, text: &str, font_size: f32, line_height: f32) -> Buffer {
         let metrics = Metrics::new(font_size, line_height);
         let mut buffer = Buffer::new(&mut self.font_system, metrics);

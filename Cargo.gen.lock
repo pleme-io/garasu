@@ -1,11 +1,18 @@
 {
   "schema_version": 2,
-  "cargo_lock_sha256": "df47e7f3ad8c1acd037c6d4f7c23e4db24a8c485101bf468869b5966b9e5ec92",
+  "cargo_lock_sha256": "d02b53231569082a18a2992c6334a1a2d7cd17332322a9f1a02f7aa9d5fc9a37",
   "manifest_sha256": {
-    "Cargo.toml": "f8d2a916a3e1cd46bc8cbcf7f5ecd2dd9d1fcf5e52c6867d7409c068f0698be2"
+    "Cargo.toml": "db52287604b45e63b7ec8e0f056e1c732c92f27cf6c2457aa6a502eaa6a81795"
   },
   "target_resolves": {
     "base": {
+      "allocator-api2-0.2.21": {
+        "runtime_dependencies": [],
+        "build_dependencies": [],
+        "features": [
+          "alloc"
+        ]
+      },
       "arrayref-0.3.9": {
         "runtime_dependencies": [],
         "build_dependencies": [],
@@ -692,6 +699,16 @@
             "tree": "target"
           },
           {
+            "name": "lru",
+            "package_key": "lru-0.12.5",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
             "name": "pollster",
             "package_key": "pollster-0.4.0",
             "kind": "normal",
@@ -1078,6 +1095,28 @@
       "hashbrown-0.15.5": {
         "runtime_dependencies": [
           {
+            "name": "allocator_api2",
+            "package_key": "allocator-api2-0.2.21",
+            "kind": "normal",
+            "features": [
+              "alloc"
+            ],
+            "uses_default_features": false,
+            "optional": true,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "equivalent",
+            "package_key": "equivalent-1.0.2",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": false,
+            "optional": true,
+            "target": null,
+            "tree": "target"
+          },
+          {
             "name": "foldhash",
             "package_key": "foldhash-0.1.5",
             "kind": "normal",
@@ -1090,8 +1129,12 @@
         ],
         "build_dependencies": [],
         "features": [
+          "allocator-api2",
+          "default",
           "default-hasher",
-          "inline-more"
+          "equivalent",
+          "inline-more",
+          "raw-entry"
         ]
       },
       "hashbrown-0.17.1": {
@@ -1272,9 +1315,23 @@
         "features": []
       },
       "lru-0.12.5": {
-        "runtime_dependencies": [],
+        "runtime_dependencies": [
+          {
+            "name": "hashbrown",
+            "package_key": "hashbrown-0.15.5",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": true,
+            "target": null,
+            "tree": "target"
+          }
+        ],
         "build_dependencies": [],
-        "features": []
+        "features": [
+          "default",
+          "hashbrown"
+        ]
       },
       "memchr-2.8.3": {
         "runtime_dependencies": [],
@@ -17708,6 +17765,9 @@
     "ahash-0.8.12": {
       "edition": "2018",
       "build_script": "build.rs"
+    },
+    "allocator-api2-0.2.21": {
+      "edition": "2018"
     },
     "arrayref-0.3.9": {
       "edition": "2015"

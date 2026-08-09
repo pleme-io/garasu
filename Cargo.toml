@@ -38,6 +38,10 @@ blake3 = "1"
 fontdb = "0.16"
 bincode = "1.3"
 dirs = "6"
+# Bounded LRU for the shaped-text cache (shape_cache.rs). Same crate + major
+# mado already uses for its own (now superseded) private shape cache, so the
+# fleet keeps one LRU implementation rather than two.
+lru = "0.12"
 
 [dev-dependencies]
 tempfile = "3"
