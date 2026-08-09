@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "cargo_lock_sha256": "d02b53231569082a18a2992c6334a1a2d7cd17332322a9f1a02f7aa9d5fc9a37",
+  "cargo_lock_sha256": "fd093ffa779d4fc0f404fe1e4a7cbc24e4bc9e0c4af5918eda651ea10cf22d68",
   "manifest_sha256": {
-    "Cargo.toml": "db52287604b45e63b7ec8e0f056e1c732c92f27cf6c2457aa6a502eaa6a81795"
+    "Cargo.toml": "1ac7a9aa5582c203a0241a4cfd2b56d04acebf2886ebf51b42fba96b5a31b6ff"
   },
   "target_resolves": {
     "base": {
@@ -111,7 +111,7 @@
         "runtime_dependencies": [
           {
             "name": "bytemuck_derive",
-            "package_key": "bytemuck_derive-1.11.0",
+            "package_key": "bytemuck_derive-1.12.0",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -129,7 +129,7 @@
           "min_const_generics"
         ]
       },
-      "bytemuck_derive-1.11.0": {
+      "bytemuck_derive-1.12.0": {
         "runtime_dependencies": [
           {
             "name": "proc_macro2",
@@ -153,7 +153,7 @@
           },
           {
             "name": "syn",
-            "package_key": "syn-2.0.119",
+            "package_key": "syn-3.0.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -165,11 +165,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "cc-1.4.0": {
+      "cc-1.4.2": {
         "runtime_dependencies": [
           {
             "name": "find_msvc_tools",
-            "package_key": "find-msvc-tools-0.1.9",
+            "package_key": "find-msvc-tools-0.1.10",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -602,7 +602,7 @@
           "std"
         ]
       },
-      "find-msvc-tools-0.1.9": {
+      "find-msvc-tools-0.1.10": {
         "runtime_dependencies": [],
         "build_dependencies": [],
         "features": []
@@ -634,7 +634,7 @@
           "std"
         ]
       },
-      "garasu-0.1.7": {
+      "garasu-0.1.8": {
         "runtime_dependencies": [
           {
             "name": "bincode",
@@ -648,7 +648,7 @@
           },
           {
             "name": "blake3",
-            "package_key": "blake3-1.8.5",
+            "package_key": "blake3-1.8.6",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -742,7 +742,7 @@
           },
           {
             "name": "thiserror",
-            "package_key": "thiserror-2.0.19",
+            "package_key": "thiserror-2.0.20",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1075,7 +1075,7 @@
           },
           {
             "name": "zerocopy",
-            "package_key": "zerocopy-0.8.55",
+            "package_key": "zerocopy-0.8.56",
             "kind": "normal",
             "features": [
               "derive",
@@ -1515,7 +1515,7 @@
           },
           {
             "name": "thiserror",
-            "package_key": "thiserror-2.0.19",
+            "package_key": "thiserror-2.0.20",
             "kind": "normal",
             "features": [],
             "uses_default_features": false,
@@ -2447,11 +2447,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "thiserror-2.0.19": {
+      "thiserror-2.0.20": {
         "runtime_dependencies": [
           {
             "name": "thiserror_impl",
-            "package_key": "thiserror-impl-2.0.19",
+            "package_key": "thiserror-impl-2.0.20",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2466,7 +2466,7 @@
           "std"
         ]
       },
-      "thiserror-impl-2.0.19": {
+      "thiserror-impl-2.0.20": {
         "runtime_dependencies": [
           {
             "name": "proc_macro2",
@@ -2960,7 +2960,7 @@
           },
           {
             "name": "thiserror",
-            "package_key": "thiserror-2.0.19",
+            "package_key": "thiserror-2.0.20",
             "kind": "normal",
             "features": [],
             "uses_default_features": false,
@@ -2991,11 +2991,11 @@
           "std"
         ]
       },
-      "zerocopy-0.8.55": {
+      "zerocopy-0.8.56": {
         "runtime_dependencies": [
           {
             "name": "zerocopy_derive",
-            "package_key": "zerocopy-derive-0.8.55",
+            "package_key": "zerocopy-derive-0.8.56",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -3005,7 +3005,7 @@
           },
           {
             "name": "zerocopy_derive",
-            "package_key": "zerocopy-derive-0.8.55",
+            "package_key": "zerocopy-derive-0.8.56",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -3021,7 +3021,7 @@
           "zerocopy-derive"
         ]
       },
-      "zerocopy-derive-0.8.55": {
+      "zerocopy-derive-0.8.56": {
         "runtime_dependencies": [
           {
             "name": "proc_macro2",
@@ -3075,7 +3075,7 @@
               "default"
             ]
           },
-          "blake3-1.8.5": {
+          "blake3-1.8.6": {
             "runtime_dependencies": [
               {
                 "name": "arrayref",
@@ -3121,7 +3121,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.0",
+                "package_key": "cc-1.4.2",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -4162,7 +4162,7 @@
               },
               {
                 "name": "thiserror",
-                "package_key": "thiserror-2.0.19",
+                "package_key": "thiserror-2.0.20",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -4525,7 +4525,7 @@
               },
               {
                 "name": "thiserror",
-                "package_key": "thiserror-2.0.19",
+                "package_key": "thiserror-2.0.20",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -4872,7 +4872,7 @@
               },
               {
                 "name": "zerocopy",
-                "package_key": "zerocopy-0.8.55",
+                "package_key": "zerocopy-0.8.56",
                 "kind": "normal",
                 "features": [
                   "simd"
@@ -4911,7 +4911,7 @@
               "default"
             ]
           },
-          "blake3-1.8.5": {
+          "blake3-1.8.6": {
             "runtime_dependencies": [
               {
                 "name": "arrayref",
@@ -4957,7 +4957,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.0",
+                "package_key": "cc-1.4.2",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -6174,7 +6174,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.0",
+                "package_key": "cc-1.4.2",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -6725,7 +6725,7 @@
               },
               {
                 "name": "thiserror",
-                "package_key": "thiserror-2.0.19",
+                "package_key": "thiserror-2.0.20",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -7051,7 +7051,7 @@
               },
               {
                 "name": "thiserror",
-                "package_key": "thiserror-2.0.19",
+                "package_key": "thiserror-2.0.20",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -7668,7 +7668,7 @@
               },
               {
                 "name": "zerocopy",
-                "package_key": "zerocopy-0.8.55",
+                "package_key": "zerocopy-0.8.56",
                 "kind": "normal",
                 "features": [
                   "simd"
@@ -7707,7 +7707,7 @@
               "default"
             ]
           },
-          "blake3-1.8.5": {
+          "blake3-1.8.6": {
             "runtime_dependencies": [
               {
                 "name": "arrayref",
@@ -7753,7 +7753,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.0",
+                "package_key": "cc-1.4.2",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -8970,7 +8970,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.0",
+                "package_key": "cc-1.4.2",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -9521,7 +9521,7 @@
               },
               {
                 "name": "thiserror",
-                "package_key": "thiserror-2.0.19",
+                "package_key": "thiserror-2.0.20",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -9847,7 +9847,7 @@
               },
               {
                 "name": "thiserror",
-                "package_key": "thiserror-2.0.19",
+                "package_key": "thiserror-2.0.20",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -10396,7 +10396,7 @@
               "default"
             ]
           },
-          "blake3-1.8.5": {
+          "blake3-1.8.6": {
             "runtime_dependencies": [
               {
                 "name": "arrayref",
@@ -10452,7 +10452,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.0",
+                "package_key": "cc-1.4.2",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -11498,7 +11498,7 @@
               },
               {
                 "name": "thiserror",
-                "package_key": "thiserror-2.0.19",
+                "package_key": "thiserror-2.0.20",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -11861,7 +11861,7 @@
               },
               {
                 "name": "thiserror",
-                "package_key": "thiserror-2.0.19",
+                "package_key": "thiserror-2.0.20",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -12208,7 +12208,7 @@
               },
               {
                 "name": "zerocopy",
-                "package_key": "zerocopy-0.8.55",
+                "package_key": "zerocopy-0.8.56",
                 "kind": "normal",
                 "features": [
                   "simd"
@@ -12247,7 +12247,7 @@
               "default"
             ]
           },
-          "blake3-1.8.5": {
+          "blake3-1.8.6": {
             "runtime_dependencies": [
               {
                 "name": "arrayref",
@@ -12303,7 +12303,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.0",
+                "package_key": "cc-1.4.2",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -13525,7 +13525,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.0",
+                "package_key": "cc-1.4.2",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -14076,7 +14076,7 @@
               },
               {
                 "name": "thiserror",
-                "package_key": "thiserror-2.0.19",
+                "package_key": "thiserror-2.0.20",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -14402,7 +14402,7 @@
               },
               {
                 "name": "thiserror",
-                "package_key": "thiserror-2.0.19",
+                "package_key": "thiserror-2.0.20",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -15019,7 +15019,7 @@
               },
               {
                 "name": "zerocopy",
-                "package_key": "zerocopy-0.8.55",
+                "package_key": "zerocopy-0.8.56",
                 "kind": "normal",
                 "features": [
                   "simd"
@@ -15058,7 +15058,7 @@
               "default"
             ]
           },
-          "blake3-1.8.5": {
+          "blake3-1.8.6": {
             "runtime_dependencies": [
               {
                 "name": "arrayref",
@@ -15114,7 +15114,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.0",
+                "package_key": "cc-1.4.2",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -16336,7 +16336,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.0",
+                "package_key": "cc-1.4.2",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -16887,7 +16887,7 @@
               },
               {
                 "name": "thiserror",
-                "package_key": "thiserror-2.0.19",
+                "package_key": "thiserror-2.0.20",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -17213,7 +17213,7 @@
               },
               {
                 "name": "thiserror",
-                "package_key": "thiserror-2.0.19",
+                "package_key": "thiserror-2.0.20",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -17800,7 +17800,7 @@
     "bitflags-2.13.1": {
       "edition": "2021"
     },
-    "blake3-1.8.5": {
+    "blake3-1.8.6": {
       "edition": "2024",
       "build_script": "build.rs"
     },
@@ -17813,7 +17813,7 @@
     "bytemuck-1.25.2": {
       "edition": "2018"
     },
-    "bytemuck_derive-1.11.0": {
+    "bytemuck_derive-1.12.0": {
       "edition": "2018",
       "proc_macro": true
     },
@@ -17823,8 +17823,8 @@
     "calloop-wayland-source-0.3.0": {
       "edition": "2021"
     },
-    "cc-1.4.0": {
-      "edition": "2018"
+    "cc-1.4.2": {
+      "edition": "2021"
     },
     "cfg-if-1.0.4": {
       "edition": "2018"
@@ -17900,8 +17900,8 @@
     "fastrand-2.5.0": {
       "edition": "2018"
     },
-    "find-msvc-tools-0.1.9": {
-      "edition": "2018"
+    "find-msvc-tools-0.1.10": {
+      "edition": "2021"
     },
     "foldhash-0.1.5": {
       "edition": "2021"
@@ -17925,7 +17925,7 @@
     "foreign-types-shared-0.3.1": {
       "edition": "2018"
     },
-    "garasu-0.1.7": {
+    "garasu-0.1.8": {
       "edition": "2024",
       "build_script": "build.rs",
       "lib_target": {
@@ -18257,7 +18257,7 @@
       "edition": "2021",
       "build_script": "build.rs"
     },
-    "thiserror-2.0.19": {
+    "thiserror-2.0.20": {
       "edition": "2021",
       "build_script": "build.rs"
     },
@@ -18265,7 +18265,7 @@
       "edition": "2021",
       "proc_macro": true
     },
-    "thiserror-impl-2.0.19": {
+    "thiserror-impl-2.0.20": {
       "edition": "2021",
       "proc_macro": true
     },
@@ -18451,11 +18451,11 @@
     "zeno-0.3.3": {
       "edition": "2021"
     },
-    "zerocopy-0.8.55": {
+    "zerocopy-0.8.56": {
       "edition": "2021",
       "build_script": "build.rs"
     },
-    "zerocopy-derive-0.8.55": {
+    "zerocopy-derive-0.8.56": {
       "edition": "2021",
       "proc_macro": true
     },
