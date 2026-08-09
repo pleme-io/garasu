@@ -169,10 +169,18 @@ pub struct ShapeRequest {
     spans: Vec<ShapeSpan>,
     font_size_bits: u32,
     line_height_bits: u32,
-    /// `set_size` bounds. `None` means unwrapped (one line, measured to its
-    /// natural width) — which is a genuinely different shaping result from
-    /// any wrapped width, hence part of the key.
-    wrap: Option<(u32, u32)>,
+    /// `set_size` width bound. `None` means no wrapping.
+    wrap_w: Option<u32>,
+    /// `set_size` height bound, INDEPENDENT of the width bound.
+    ///
+    /// These are two fields rather than one pair because width-only wrapping
+    /// is a real and distinct case: a text MEASURER must bound the width (to
+    /// find the line breaks) while leaving the height unbounded (or it would
+    /// under-count lines and report a box shorter than the text). Bounding
+    /// height is not merely a clip — cosmic-text stops yielding layout runs
+    /// past it, so a buffer cached with a smaller height genuinely CONTAINS
+    /// fewer lines.
+    wrap_h: Option<u32>,
 }
 
 impl ShapeRequest {
@@ -183,7 +191,8 @@ impl ShapeRequest {
             spans,
             font_size_bits: canon(font_size),
             line_height_bits: canon(line_height),
-            wrap: None,
+            wrap_w: None,
+            wrap_h: None,
         }
     }
 
@@ -201,7 +210,22 @@ impl ShapeRequest {
     /// the key.
     #[must_use]
     pub fn wrapped(mut self, width: f32, height: f32) -> Self {
-        self.wrap = Some((canon(width), canon(height)));
+        self.wrap_w = Some(canon(width));
+        self.wrap_h = Some(canon(height));
+        self
+    }
+
+    /// Wrap to `width` with NO height bound — line breaks are found, but no
+    /// line is dropped.
+    ///
+    /// This is what a text measurer wants: bounding the height would stop
+    /// cosmic-text yielding runs past it, so the measurement would report
+    /// fewer lines than the text actually occupies and the caller would lay
+    /// out a box too short for its own content.
+    #[must_use]
+    pub fn wrapped_width(mut self, width: f32) -> Self {
+        self.wrap_w = Some(canon(width));
+        self.wrap_h = None;
         self
     }
 
@@ -239,11 +263,11 @@ impl ShapeRequest {
         // text first and the size second runs the whole line-breaking pass
         // TWICE for every wrapped run. Shaping itself is retained across the
         // two (cosmic-text keeps `shape_opt`), but the layout pass is not.
-        let (w, h) = match self.wrap {
-            Some((w, h)) => (Some(f32::from_bits(w)), Some(f32::from_bits(h))),
-            None => (None, None),
-        };
-        buffer.set_size(fs, w, h);
+        buffer.set_size(
+            fs,
+            self.wrap_w.map(f32::from_bits),
+            self.wrap_h.map(f32::from_bits),
+        );
 
         let attrs: Vec<(&str, Attrs<'_>)> =
             self.spans.iter().map(|s| (&*s.text, s.attrs())).collect();
@@ -536,6 +560,42 @@ mod tests {
             base.clone().wrapped(100.0, 40.0),
             base.wrapped(100.0, 80.0),
             "wrap height must change the key",
+        );
+    }
+
+    /// Width-only wrapping is a DISTINCT key from width+height wrapping, and
+    /// a distinct shaping result: bounding the height drops layout runs, so a
+    /// measurer that accidentally received a height-bounded buffer would
+    /// under-count lines and size its box too short.
+    #[test]
+    fn width_only_wrapping_is_distinct_from_width_and_height() {
+        let base = ShapeRequest::line("hello world", FamilyKey::Monospace, 16.0, 20.0);
+        assert_ne!(
+            base.clone().wrapped_width(100.0),
+            base.clone().wrapped(100.0, 40.0),
+            "width-only and width+height must not share a key",
+        );
+        assert_ne!(base.clone().wrapped_width(100.0), base, "wrapping changes the key");
+    }
+
+    #[test]
+    fn width_only_wrapping_never_drops_lines() {
+        let mut fs = fs();
+        let long = "the quick brown fox jumps over the lazy dog again and again and again";
+        let unbounded = ShapeRequest::line(long, FamilyKey::Monospace, 16.0, 20.0)
+            .wrapped_width(120.0)
+            .build(&mut fs);
+        // A height bound of one line's worth truncates the run iteration.
+        let clipped = ShapeRequest::line(long, FamilyKey::Monospace, 16.0, 20.0)
+            .wrapped(120.0, 20.0)
+            .build(&mut fs);
+        assert!(unbounded.lines > 1, "the text should wrap");
+        assert!(
+            clipped.lines < unbounded.lines,
+            "a height bound drops runs ({} vs {}) — which is exactly why a \
+             measurer must not set one",
+            clipped.lines,
+            unbounded.lines,
         );
     }
 

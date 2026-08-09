@@ -37,7 +37,7 @@ pub use shader::{BLUR_SHADER, ShaderConfig, ShaderPipeline, ShaderSource};
 pub mod font_cache;
 pub use layers::{Frame, PreparedLayer, TextLayerId, TextLayerStack};
 pub use pane::PaneRect;
-pub use text::{preload_fonts, TextConfig, TextLayout, TextRenderer};
+pub use text::{build_font_system, preload_fonts, TextConfig, TextLayout, TextRenderer};
 pub use window::{AppWindow, WindowConfig};
 
 #[cfg(test)]

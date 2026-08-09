@@ -291,6 +291,27 @@ fn sys_locale_string() -> String {
 /// `TextRenderer::new` and `crate::layers::TextLayerStack::new`
 /// (the single font-build path, so the emoji-fallback +
 /// Nix-font-dir + preload-cache contract can't drift between them).
+/// Build a `FontSystem` through the SAME path [`TextRenderer::new`] uses —
+/// the persistent fontdb cache, the Nix font directories, and the
+/// colour-emoji fallback guarantee.
+///
+/// Reach for this whenever something other than the renderer needs to shape
+/// text and its result has to AGREE with what the renderer draws — a layout
+/// engine's text measurer, most obviously. A bare `FontSystem::new()` skips
+/// all three guarantees, so the measurer and the renderer end up holding
+/// different font databases: a glyph that resolves through the emoji
+/// fallback or a Nix-only family measures at `.notdef` width and draws at its
+/// real width, and the caller's box is the wrong size with nothing to error
+/// on.
+///
+/// Unlike the internal preload path, this never CONSUMES a preloaded system —
+/// it always builds one (hitting the on-disk cache, so ~5-15 ms after the
+/// first run) — so calling it does not starve a later `TextRenderer::new`.
+#[must_use]
+pub fn build_font_system() -> FontSystem {
+    build_font_system_scanned()
+}
+
 pub(crate) fn take_or_build_font_system() -> FontSystem {
     if let Some(lock) = FONT_PRELOAD.get() {
         if let Some(handle) = lock.lock().expect("font preload mutex poisoned").take() {
