@@ -33,14 +33,66 @@ impl GpuContext {
     pub async fn new_with_power(
         power_preference: wgpu::PowerPreference,
     ) -> Result<Self, GarasuError> {
+        Self::build(wgpu::Instance::default(), None, power_preference).await
+    }
+
+    /// The wgpu instance, alone — stage 1 of the **surface-aware** path.
+    ///
+    /// A surface and the adapter that presents to it must come from the SAME
+    /// instance, and wgpu's ordering is instance → surface → adapter. So a
+    /// caller who wants [`Self::new_for_surface`] needs the instance in hand
+    /// *before* the context exists. This hands it over.
+    #[must_use]
+    pub fn instance() -> wgpu::Instance {
+        wgpu::Instance::default()
+    }
+
+    /// Initialize a context whose adapter can **actually present to `surface`**.
+    ///
+    /// ── WHY THIS EXISTS (measured 2026-08-19, on Linux) ───────────────────
+    /// [`Self::new`] requests an adapter with `compatible_surface: None`, which
+    /// is harmless on macOS — one Metal adapter, and it presents to everything.
+    /// On Linux it is not harmless: several adapters are typically enumerated
+    /// (a hardware Vulkan one, llvmpipe, sometimes a GL one), and wgpu is free
+    /// to hand back one that **cannot present to the surface you then create**.
+    ///
+    /// ★ The failure does not surface as an error. `get_capabilities()` on a
+    /// mismatched surface/adapter pair returns a struct whose `formats` and
+    /// `alpha_modes` vectors are simply **EMPTY**, so the damage lands in the
+    /// caller as `index out of bounds: the len is 0 but the index is 0` —
+    /// pointing at the consumer's indexing rather than at the adapter choice
+    /// two layers up. That is exactly how it was found: mado connected to a
+    /// Wayland compositor on Linux, garasu reported `gpu context ready`, and
+    /// madori panicked on `caps.formats[0]`.
+    ///
+    /// So: if you have a surface, use this. `new()` remains correct for the
+    /// headless and single-adapter cases, and every existing consumer is
+    /// untouched.
+    ///
+    /// # Errors
+    /// Returns [`GarasuError::Gpu`] if no adapter can present to `surface`, or
+    /// if device creation fails.
+    pub async fn new_for_surface(
+        instance: wgpu::Instance,
+        surface: &wgpu::Surface<'_>,
+        power_preference: wgpu::PowerPreference,
+    ) -> Result<Self, GarasuError> {
+        Self::build(instance, Some(surface), power_preference).await
+    }
+
+    async fn build(
+        instance: wgpu::Instance,
+        compatible_surface: Option<&wgpu::Surface<'_>>,
+        power_preference: wgpu::PowerPreference,
+    ) -> Result<Self, GarasuError> {
         let t_start = std::time::Instant::now();
-        let instance = wgpu::Instance::default();
+        let surface_aware = compatible_surface.is_some();
         let t_instance = t_start.elapsed();
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference,
-                compatible_surface: None,
+                compatible_surface,
                 force_fallback_adapter: false,
             })
             .await
@@ -62,6 +114,9 @@ impl GpuContext {
             device_ms = (t_device - t_adapter).as_millis() as u64,
             total_ms = t_device.as_millis() as u64,
             power = ?power_preference,
+            surface_aware,
+            adapter = ?adapter.get_info().name,
+            backend = ?adapter.get_info().backend,
             "gpu context ready"
         );
 

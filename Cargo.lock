@@ -581,7 +581,7 @@ dependencies = [
 
 [[package]]
 name = "garasu"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "bincode",
  "blake3",
