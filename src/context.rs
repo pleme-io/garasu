@@ -97,6 +97,69 @@ impl GpuContext {
             })
             .await
             .map_err(|e| GarasuError::Gpu(format!("no suitable GPU adapter found: {e}")))?;
+
+        // ── ★ NEVER SILENTLY LAND ON THE CPU RASTERIZER ───────────────────
+        //
+        // `force_fallback_adapter: false` asks wgpu not to *force* a fallback.
+        // It does not stop it from *choosing* one: a software Vulkan ICD such
+        // as lavapipe advertises itself like any other adapter, and under
+        // `PowerPreference::LowPower` — our default, chosen for a macOS
+        // reason — it is a perfectly reasonable answer to "give me the
+        // low-power device". It is the lowest-power device on the machine.
+        //
+        // Measured on plo 2026-08-20: an RTX 3070 with a working
+        // `nvidia_icd.json` and live `/dev/nvidia*` nodes, and mado rendering
+        // through `llvmpipe (LLVM 21.1.7)` at 34 fps — on the CPU, with the
+        // GPU idle at 39 MiB. Nothing logged an error, because nothing was
+        // wrong as far as wgpu was concerned.
+        //
+        // So the choice is checked rather than trusted: if the adapter we were
+        // handed is a CPU device, look for a hardware one and prefer it. The
+        // fallback is still available when it is genuinely all there is —
+        // headless CI, a VM with no passthrough — which is why this re-selects
+        // instead of failing.
+        let adapter = if adapter.get_info().device_type == wgpu::DeviceType::Cpu {
+            // ★ AND IT MUST BE ABLE TO PRESENT TO *THIS* SURFACE.
+            // `enumerate_adapters` does not filter by surface compatibility, and
+            // an incompatible adapter does not error — it returns EMPTY
+            // capabilities, which then fails later and far away. So when we
+            // have a surface, an adapter only counts if it advertises at least
+            // one format for it.
+            let hardware = instance
+                .enumerate_adapters(wgpu::Backends::all())
+                .into_iter()
+                .find(|a| {
+                    a.get_info().device_type != wgpu::DeviceType::Cpu
+                        && compatible_surface.is_none_or(|s| {
+                            !s.get_capabilities(a).formats.is_empty()
+                        })
+                });
+            match hardware {
+                Some(hw) => {
+                    tracing::info!(
+                        target: "garasu::ctx",
+                        rejected = ?adapter.get_info().name,
+                        chosen = ?hw.get_info().name,
+                        device_type = ?hw.get_info().device_type,
+                        "the requested power preference selected a CPU adapter; \
+                         a hardware adapter exists and was preferred"
+                    );
+                    hw
+                }
+                None => {
+                    // Genuinely no GPU. Say so once, loudly, rather than
+                    // letting a consumer wonder why it renders at 30 fps.
+                    tracing::warn!(
+                        target: "garasu::ctx",
+                        adapter = ?adapter.get_info().name,
+                        "no hardware GPU adapter on this machine — rendering on the CPU"
+                    );
+                    adapter
+                }
+            }
+        } else {
+            adapter
+        };
         let t_adapter = t_start.elapsed();
 
         let (device, queue): (wgpu::Device, wgpu::Queue) = adapter
@@ -117,6 +180,10 @@ impl GpuContext {
             surface_aware,
             adapter = ?adapter.get_info().name,
             backend = ?adapter.get_info().backend,
+            // Logged because "which adapter" was not enough to tell CPU from
+            // GPU at a glance — `llvmpipe` reads like a driver name, not a
+            // verdict, and that is how software rendering went unnoticed.
+            device_type = ?adapter.get_info().device_type,
             "gpu context ready"
         );
 
