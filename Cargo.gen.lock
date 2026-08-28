@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "cargo_lock_sha256": "260c762b5efb88d6e9230d91218021c8ffda2ac62ce23e862b36c6e602d8ee54",
+  "cargo_lock_sha256": "aa37999a414cff020d89f483f2d4bccdd3f415742f9382c8d274fe1f59bbbceb",
   "manifest_sha256": {
-    "Cargo.toml": "1f6f6c6760692f0d2528677d2155fdbe041d47c4d2e36964a868338e37d172b4"
+    "Cargo.toml": "1289adc3763e0b16412f0d93bfe0707fb888f430774633ae10ae53fc694963de"
   },
   "target_resolves": {
     "base": {
@@ -148,7 +148,7 @@
           },
           {
             "name": "syn",
-            "package_key": "syn-3.0.3",
+            "package_key": "syn-3.0.4",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -160,7 +160,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "cc-1.4.3": {
+      "cc-1.4.4": {
         "runtime_dependencies": [
           {
             "name": "find_msvc_tools",
@@ -278,7 +278,7 @@
           },
           {
             "name": "log",
-            "package_key": "log-0.4.33",
+            "package_key": "log-0.4.34",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -607,7 +607,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "font-types-0.12.3": {
+      "font-types-0.12.4": {
         "runtime_dependencies": [
           {
             "name": "bytemuck",
@@ -629,7 +629,7 @@
           "std"
         ]
       },
-      "garasu-0.1.13": {
+      "garasu-0.1.14": {
         "runtime_dependencies": [
           {
             "name": "bincode",
@@ -1147,7 +1147,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "indexmap-2.14.0": {
+      "indexmap-2.14.1": {
         "runtime_dependencies": [
           {
             "name": "equivalent",
@@ -1304,7 +1304,7 @@
           "default"
         ]
       },
-      "log-0.4.33": {
+      "log-0.4.34": {
         "runtime_dependencies": [],
         "build_dependencies": [],
         "features": []
@@ -1435,7 +1435,7 @@
           },
           {
             "name": "indexmap",
-            "package_key": "indexmap-2.14.0",
+            "package_key": "indexmap-2.14.1",
             "kind": "normal",
             "features": [],
             "uses_default_features": false,
@@ -1445,7 +1445,7 @@
           },
           {
             "name": "log",
-            "package_key": "log-0.4.33",
+            "package_key": "log-0.4.34",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1762,7 +1762,7 @@
           },
           {
             "name": "font_types",
-            "package_key": "font-types-0.12.3",
+            "package_key": "font-types-0.12.4",
             "kind": "normal",
             "features": [
               "bytemuck"
@@ -2003,7 +2003,7 @@
           },
           {
             "name": "syn",
-            "package_key": "syn-3.0.3",
+            "package_key": "syn-3.0.4",
             "kind": "normal",
             "features": [
               "clone-impls",
@@ -2335,7 +2335,7 @@
           "visit-mut"
         ]
       },
-      "syn-3.0.3": {
+      "syn-3.0.4": {
         "runtime_dependencies": [
           {
             "name": "proc_macro2",
@@ -2485,7 +2485,7 @@
           },
           {
             "name": "syn",
-            "package_key": "syn-3.0.3",
+            "package_key": "syn-3.0.4",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2753,7 +2753,7 @@
           },
           {
             "name": "log",
-            "package_key": "log-0.4.33",
+            "package_key": "log-0.4.34",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2945,7 +2945,7 @@
           },
           {
             "name": "log",
-            "package_key": "log-0.4.33",
+            "package_key": "log-0.4.34",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -3106,7 +3106,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.3",
+                "package_key": "cc-1.4.4",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -3288,7 +3288,7 @@
             "runtime_dependencies": [
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -3408,7 +3408,7 @@
               },
               {
                 "name": "syn",
-                "package_key": "syn-3.0.3",
+                "package_key": "syn-3.0.4",
                 "kind": "normal",
                 "features": [
                   "full"
@@ -3489,7 +3489,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -4055,7 +4055,7 @@
               },
               {
                 "name": "indexmap",
-                "package_key": "indexmap-2.14.0",
+                "package_key": "indexmap-2.14.1",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -4065,7 +4065,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -4408,7 +4408,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -4937,7 +4937,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.3",
+                "package_key": "cc-1.4.4",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -4965,7 +4965,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -5124,7 +5124,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -5666,7 +5666,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -5776,7 +5776,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -6014,7 +6014,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -6154,7 +6154,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.3",
+                "package_key": "cc-1.4.4",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -6509,7 +6509,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -6613,7 +6613,7 @@
               },
               {
                 "name": "indexmap",
-                "package_key": "indexmap-2.14.0",
+                "package_key": "indexmap-2.14.1",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -6623,7 +6623,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -6949,7 +6949,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -7530,7 +7530,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -7728,7 +7728,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.3",
+                "package_key": "cc-1.4.4",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -7756,7 +7756,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -7915,7 +7915,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -8457,7 +8457,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -8567,7 +8567,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -8805,7 +8805,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -8945,7 +8945,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.3",
+                "package_key": "cc-1.4.4",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -9300,7 +9300,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -9404,7 +9404,7 @@
               },
               {
                 "name": "indexmap",
-                "package_key": "indexmap-2.14.0",
+                "package_key": "indexmap-2.14.1",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -9414,7 +9414,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -9740,7 +9740,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -10321,7 +10321,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -10405,7 +10405,7 @@
               },
               {
                 "name": "cpufeatures",
-                "package_key": "cpufeatures-0.3.0",
+                "package_key": "cpufeatures-0.3.1",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -10417,7 +10417,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.3",
+                "package_key": "cc-1.4.4",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -10590,7 +10590,7 @@
               "link"
             ]
           },
-          "cpufeatures-0.3.0": {
+          "cpufeatures-0.3.1": {
             "runtime_dependencies": [],
             "build_dependencies": [],
             "features": []
@@ -10604,7 +10604,7 @@
             "runtime_dependencies": [
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -10724,7 +10724,7 @@
               },
               {
                 "name": "syn",
-                "package_key": "syn-3.0.3",
+                "package_key": "syn-3.0.4",
                 "kind": "normal",
                 "features": [
                   "full"
@@ -10805,7 +10805,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -11371,7 +11371,7 @@
               },
               {
                 "name": "indexmap",
-                "package_key": "indexmap-2.14.0",
+                "package_key": "indexmap-2.14.1",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -11381,7 +11381,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -11724,7 +11724,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -12251,7 +12251,7 @@
               },
               {
                 "name": "cpufeatures",
-                "package_key": "cpufeatures-0.3.0",
+                "package_key": "cpufeatures-0.3.1",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -12263,7 +12263,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.3",
+                "package_key": "cc-1.4.4",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -12291,7 +12291,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -12396,7 +12396,7 @@
             "build_dependencies": [],
             "features": []
           },
-          "cpufeatures-0.3.0": {
+          "cpufeatures-0.3.1": {
             "runtime_dependencies": [],
             "build_dependencies": [],
             "features": []
@@ -12455,7 +12455,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -12997,7 +12997,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13107,7 +13107,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13345,7 +13345,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13485,7 +13485,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.3",
+                "package_key": "cc-1.4.4",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -13840,7 +13840,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -13944,7 +13944,7 @@
               },
               {
                 "name": "indexmap",
-                "package_key": "indexmap-2.14.0",
+                "package_key": "indexmap-2.14.1",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -13954,7 +13954,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -14280,7 +14280,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -14861,7 +14861,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -15057,7 +15057,7 @@
               },
               {
                 "name": "cpufeatures",
-                "package_key": "cpufeatures-0.3.0",
+                "package_key": "cpufeatures-0.3.1",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -15069,7 +15069,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.3",
+                "package_key": "cc-1.4.4",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -15097,7 +15097,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -15202,7 +15202,7 @@
             "build_dependencies": [],
             "features": []
           },
-          "cpufeatures-0.3.0": {
+          "cpufeatures-0.3.1": {
             "runtime_dependencies": [],
             "build_dependencies": [],
             "features": []
@@ -15261,7 +15261,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -15803,7 +15803,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -15913,7 +15913,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -16151,7 +16151,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -16291,7 +16291,7 @@
             "build_dependencies": [
               {
                 "name": "cc",
-                "package_key": "cc-1.4.3",
+                "package_key": "cc-1.4.4",
                 "kind": "build",
                 "features": [],
                 "uses_default_features": true,
@@ -16646,7 +16646,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -16750,7 +16750,7 @@
               },
               {
                 "name": "indexmap",
-                "package_key": "indexmap-2.14.0",
+                "package_key": "indexmap-2.14.1",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": false,
@@ -16760,7 +16760,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -17086,7 +17086,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -17667,7 +17667,7 @@
               },
               {
                 "name": "log",
-                "package_key": "log-0.4.33",
+                "package_key": "log-0.4.34",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -17778,7 +17778,7 @@
     "calloop-wayland-source-0.3.0": {
       "edition": "2021"
     },
-    "cc-1.4.3": {
+    "cc-1.4.4": {
       "edition": "2021"
     },
     "cfg-if-1.0.4": {
@@ -17808,7 +17808,7 @@
     "cosmic-text-0.14.2": {
       "edition": "2021"
     },
-    "cpufeatures-0.3.0": {
+    "cpufeatures-0.3.1": {
       "edition": "2024"
     },
     "cursor-icon-1.2.0": {
@@ -17861,7 +17861,7 @@
     "foldhash-0.1.5": {
       "edition": "2021"
     },
-    "font-types-0.12.3": {
+    "font-types-0.12.4": {
       "edition": "2021"
     },
     "fontconfig-parser-0.5.8": {
@@ -17880,7 +17880,7 @@
     "foreign-types-shared-0.3.1": {
       "edition": "2018"
     },
-    "garasu-0.1.13": {
+    "garasu-0.1.14": {
       "edition": "2024",
       "build_script": "build.rs",
       "lib_target": {
@@ -17932,7 +17932,7 @@
     "hexf-parse-0.2.1": {
       "edition": "2018"
     },
-    "indexmap-2.14.0": {
+    "indexmap-2.14.1": {
       "edition": "2024"
     },
     "itoa-1.0.18": {
@@ -17968,7 +17968,7 @@
     "lock_api-0.4.14": {
       "edition": "2021"
     },
-    "log-0.4.33": {
+    "log-0.4.34": {
       "edition": "2021"
     },
     "lru-0.12.5": {
@@ -18196,7 +18196,7 @@
     "syn-2.0.119": {
       "edition": "2021"
     },
-    "syn-3.0.3": {
+    "syn-3.0.4": {
       "edition": "2021"
     },
     "sys-locale-0.3.2": {
