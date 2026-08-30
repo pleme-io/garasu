@@ -58,12 +58,7 @@ impl HeadlessTarget {
     /// the consumer's render pipeline expects — typical mado /
     /// madori work uses `Rgba8UnormSrgb` or `Bgra8UnormSrgb`.
     #[must_use]
-    pub fn new(
-        gpu: &GpuContext,
-        width: u32,
-        height: u32,
-        format: wgpu::TextureFormat,
-    ) -> Self {
+    pub fn new(gpu: &GpuContext, width: u32, height: u32, format: wgpu::TextureFormat) -> Self {
         let texture = gpu.device.create_texture(&wgpu::TextureDescriptor {
             label: Some("garasu-headless-target"),
             size: wgpu::Extent3d {
@@ -216,11 +211,7 @@ impl HeadlessTarget {
 /// `rgba8` is the pixel buffer returned by
 /// [`HeadlessTarget::read_pixels_rgba8`]. Returns `Err(coord)` at
 /// the first offending pixel.
-pub fn assert_no_magenta_pixels(
-    rgba8: &[u8],
-    width: u32,
-    height: u32,
-) -> Result<(), (u32, u32)> {
+pub fn assert_no_magenta_pixels(rgba8: &[u8], width: u32, height: u32) -> Result<(), (u32, u32)> {
     debug_assert_eq!(
         rgba8.len() as u32,
         width * height * 4,
@@ -315,12 +306,7 @@ impl HeadlessHarness {
     /// passed format — pass the same format you'll use for the
     /// real surface so the test matches production.
     #[must_use]
-    pub fn new(
-        gpu: &GpuContext,
-        width: u32,
-        height: u32,
-        format: wgpu::TextureFormat,
-    ) -> Self {
+    pub fn new(gpu: &GpuContext, width: u32, height: u32, format: wgpu::TextureFormat) -> Self {
         let target = HeadlessTarget::new(gpu, width, height, format);
         let text = TextLayerStack::new(&gpu.device, &gpu.queue, format);
         Self { target, text }
@@ -439,7 +425,12 @@ impl HeadlessSwapchain {
         let slot = self.next_slot;
         self.next_slot = (self.next_slot + 1) % self.targets.len();
         let target = &self.targets[slot];
-        render_fn(&mut self.text, target.view(), target.width(), target.height());
+        render_fn(
+            &mut self.text,
+            target.view(),
+            target.width(),
+            target.height(),
+        );
         let _ = gpu.device.poll(wgpu::PollType::Wait);
         target.read_pixels_rgba8(gpu)
     }
@@ -567,12 +558,7 @@ mod tests {
     #[test]
     fn headless_target_clear_render_produces_expected_color() {
         let gpu = pollster::block_on(GpuContext::new()).expect("gpu");
-        let target = HeadlessTarget::new(
-            &gpu,
-            64,
-            64,
-            wgpu::TextureFormat::Rgba8UnormSrgb,
-        );
+        let target = HeadlessTarget::new(&gpu, 64, 64, wgpu::TextureFormat::Rgba8UnormSrgb);
 
         // Clear to magenta intentionally — we want to verify
         // readback works AND that assert_no_magenta_pixels fires.
@@ -615,28 +601,38 @@ mod tests {
         // got hit exactly twice. Catches "every render hits the
         // same slot" implementation bugs.
         let gpu = pollster::block_on(GpuContext::new()).expect("gpu");
-        let mut chain = HeadlessSwapchain::new(
-            &gpu,
-            3,
-            16,
-            16,
-            wgpu::TextureFormat::Rgba8UnormSrgb,
-        );
+        let mut chain =
+            HeadlessSwapchain::new(&gpu, 3, 16, 16, wgpu::TextureFormat::Rgba8UnormSrgb);
         // Render six frames, each with a slot-distinct clear color.
         // Slot 0 → red, slot 1 → green, slot 2 → blue; second pass
         // same. After 6 renders, slot N holds the LAST color
         // written to it (red / green / blue).
         let colors = [
-            wgpu::Color { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
-            wgpu::Color { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
-            wgpu::Color { r: 0.0, g: 0.0, b: 1.0, a: 1.0 },
+            wgpu::Color {
+                r: 1.0,
+                g: 0.0,
+                b: 0.0,
+                a: 1.0,
+            },
+            wgpu::Color {
+                r: 0.0,
+                g: 1.0,
+                b: 0.0,
+                a: 1.0,
+            },
+            wgpu::Color {
+                r: 0.0,
+                g: 0.0,
+                b: 1.0,
+                a: 1.0,
+            },
         ];
         for i in 0..6 {
             let c = colors[i % 3];
             chain.render_into_next(&gpu, |_text, view, _w, _h| {
-                let mut enc = gpu.device.create_command_encoder(
-                    &wgpu::CommandEncoderDescriptor { label: None },
-                );
+                let mut enc = gpu
+                    .device
+                    .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
                 {
                     let _ = enc.begin_render_pass(&wgpu::RenderPassDescriptor {
                         label: None,
@@ -675,14 +671,14 @@ mod tests {
         // If we re-render the SAME state once more, that lands
         // in slot 2 — all three slots should hash equal.
         let gpu = pollster::block_on(GpuContext::new()).expect("gpu");
-        let mut chain = HeadlessSwapchain::new(
-            &gpu,
-            3,
-            32,
-            32,
-            wgpu::TextureFormat::Rgba8UnormSrgb,
-        );
-        let nord = wgpu::Color { r: 0.180, g: 0.204, b: 0.251, a: 1.0 };
+        let mut chain =
+            HeadlessSwapchain::new(&gpu, 3, 32, 32, wgpu::TextureFormat::Rgba8UnormSrgb);
+        let nord = wgpu::Color {
+            r: 0.180,
+            g: 0.204,
+            b: 0.251,
+            a: 1.0,
+        };
         let render_one = |gpu: &GpuContext, c: &mut HeadlessSwapchain| -> Vec<u8> {
             c.render_into_next(gpu, |_text, view, _w, _h| {
                 let mut enc = gpu
@@ -727,12 +723,7 @@ mod tests {
     fn headless_target_clear_to_nord_passes_no_magenta_check() {
         // The canonical "first-frame should be clean" test.
         let gpu = pollster::block_on(GpuContext::new()).expect("gpu");
-        let target = HeadlessTarget::new(
-            &gpu,
-            32,
-            32,
-            wgpu::TextureFormat::Rgba8UnormSrgb,
-        );
+        let target = HeadlessTarget::new(&gpu, 32, 32, wgpu::TextureFormat::Rgba8UnormSrgb);
 
         let mut encoder = gpu
             .device

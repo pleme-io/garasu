@@ -83,7 +83,12 @@ impl PaneRect {
     /// unchecked step, and every rect derived from it is then closed.
     #[must_use]
     pub const fn root(width: u32, height: u32) -> Self {
-        Self { x: 0, y: 0, w: width, h: height }
+        Self {
+            x: 0,
+            y: 0,
+            w: width,
+            h: height,
+        }
     }
 
     /// Split into `(left, right)` at `at` pixels from this rect's left edge.
@@ -97,7 +102,11 @@ impl PaneRect {
         }
         Some((
             Self { w: at, ..self },
-            Self { x: self.x + at, w: self.w - at, ..self },
+            Self {
+                x: self.x + at,
+                w: self.w - at,
+                ..self
+            },
         ))
     }
 
@@ -111,7 +120,11 @@ impl PaneRect {
         }
         Some((
             Self { h: at, ..self },
-            Self { y: self.y + at, h: self.h - at, ..self },
+            Self {
+                y: self.y + at,
+                h: self.h - at,
+                ..self
+            },
         ))
     }
 
@@ -235,14 +248,13 @@ impl<'p> LayeredPass<'p> {
     /// express any draw, then hands it a [`PanePass`] pinned to `rect`.
     /// `&mut self` serialises panes, so two cannot be open at once and the
     /// scissor cannot be observed mid-change.
-    pub fn in_pane<R>(
-        &mut self,
-        rect: PaneRect,
-        f: impl FnOnce(&mut PanePass<'_, 'p>) -> R,
-    ) -> R {
+    pub fn in_pane<R>(&mut self, rect: PaneRect, f: impl FnOnce(&mut PanePass<'_, 'p>) -> R) -> R {
         self.pass
             .set_scissor_rect(rect.x(), rect.y(), rect.width(), rect.height());
-        f(&mut PanePass { pass: &mut self.pass, rect })
+        f(&mut PanePass {
+            pass: &mut self.pass,
+            rect,
+        })
     }
 }
 
@@ -336,7 +348,10 @@ mod tests {
     fn an_inset_that_would_empty_the_rect_is_rejected() {
         assert!(ROOT.inset(0).is_some());
         assert!(ROOT.inset(299).is_some());
-        assert!(ROOT.inset(300).is_none(), "600px tall cannot inset 300/side");
+        assert!(
+            ROOT.inset(300).is_none(),
+            "600px tall cannot inset 300/side"
+        );
         assert!(ROOT.inset(9999).is_none());
     }
 

@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "cargo_lock_sha256": "aa37999a414cff020d89f483f2d4bccdd3f415742f9382c8d274fe1f59bbbceb",
+  "cargo_lock_sha256": "48fc868fd0a4b23fe38a370d362c1470ab53e77e3b73a7de5c998c7617043fc1",
   "manifest_sha256": {
-    "Cargo.toml": "1289adc3763e0b16412f0d93bfe0707fb888f430774633ae10ae53fc694963de"
+    "Cargo.toml": "a3bc1625c206d52b2cc125193d08ad994849967dcaf60fb2a4d83a162a36ed5e"
   },
   "target_resolves": {
     "base": {
@@ -704,6 +704,16 @@
             "tree": "target"
           },
           {
+            "name": "mekuri",
+            "package_key": "mekuri-0.1.2",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
             "name": "pollster",
             "package_key": "pollster-0.4.0",
             "kind": "normal",
@@ -1327,6 +1337,11 @@
           "default",
           "hashbrown"
         ]
+      },
+      "mekuri-0.1.2": {
+        "runtime_dependencies": [],
+        "build_dependencies": [],
+        "features": []
       },
       "memchr-2.8.3": {
         "runtime_dependencies": [],
@@ -17976,6 +17991,9 @@
     },
     "malloc_buf-0.0.6": {
       "edition": "2015"
+    },
+    "mekuri-0.1.2": {
+      "edition": "2024"
     },
     "memchr-2.8.3": {
       "edition": "2021"

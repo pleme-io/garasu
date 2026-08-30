@@ -149,20 +149,19 @@ impl QuadPipeline {
             source: wgpu::ShaderSource::Wgsl(QUAD_SHADER.into()),
         });
 
-        let bind_group_layout =
-            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                label: Some("garasu_quad_bgl"),
-                entries: &[wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStages::VERTEX,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                }],
-            });
+        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("garasu_quad_bgl"),
+            entries: &[wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::VERTEX,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
+        });
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("garasu_quad_pl"),
@@ -421,8 +420,8 @@ mod tests {
     #[cfg(feature = "gpu_tests")]
     #[test]
     fn quad_pipeline_paints_red_rect_center_pixel_is_red() {
-        use crate::headless::{pixel_at, HeadlessTarget};
         use crate::GpuContext;
+        use crate::headless::{HeadlessTarget, pixel_at};
 
         let gpu = pollster::block_on(GpuContext::new()).expect("gpu");
         let format = wgpu::TextureFormat::Rgba8UnormSrgb;

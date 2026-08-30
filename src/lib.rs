@@ -31,14 +31,14 @@ pub use adaptive::{
 pub use context::GpuContext;
 pub use error::GarasuError;
 pub use quad::{QuadInstance, QuadPipeline};
-pub use shape_cache::{
-    FamilyKey, ShapeCache, ShapeRequest, ShapeSpan, ShapedText, DEFAULT_CAPACITY,
-};
 pub use shader::{BLUR_SHADER, ShaderConfig, ShaderPipeline, ShaderSource};
+pub use shape_cache::{
+    DEFAULT_CAPACITY, FamilyKey, ShapeCache, ShapeRequest, ShapeSpan, ShapedText,
+};
 pub mod font_cache;
 pub use layers::{Frame, PreparedLayer, TextLayerId, TextLayerStack};
 pub use pane::PaneRect;
-pub use text::{build_font_system, preload_fonts, TextConfig, TextLayout, TextRenderer};
+pub use text::{TextConfig, TextLayout, TextRenderer, build_font_system, preload_fonts};
 pub use window::{AppWindow, WindowConfig};
 
 #[cfg(test)]

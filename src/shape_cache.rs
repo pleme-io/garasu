@@ -199,11 +199,7 @@ impl ShapeRequest {
     /// A one-span convenience for the common case.
     #[must_use]
     pub fn line(text: &str, family: FamilyKey, font_size: f32, line_height: f32) -> Self {
-        Self::new(
-            vec![ShapeSpan::plain(text, family)],
-            font_size,
-            line_height,
-        )
+        Self::new(vec![ShapeSpan::plain(text, family)], font_size, line_height)
     }
 
     /// Wrap to `width` × `height`. Changes the shaping result, so it changes
@@ -501,16 +497,28 @@ mod tests {
     fn every_shaping_input_changes_the_key() {
         let base = ShapeRequest::line("hello", FamilyKey::Monospace, 16.0, 20.0);
         let variants = [
-            ("text", ShapeRequest::line("hellp", FamilyKey::Monospace, 16.0, 20.0)),
-            ("family", ShapeRequest::line("hello", FamilyKey::SansSerif, 16.0, 20.0)),
-            ("named family", ShapeRequest::line("hello", FamilyKey::named("Menlo"), 16.0, 20.0)),
-            ("font size", ShapeRequest::line("hello", FamilyKey::Monospace, 17.0, 20.0)),
-            ("line height", ShapeRequest::line("hello", FamilyKey::Monospace, 16.0, 21.0)),
-            ("wrap", base.clone().wrapped(100.0, 40.0)),
             (
-                "wrap width",
-                base.clone().wrapped(100.0, 40.0),
+                "text",
+                ShapeRequest::line("hellp", FamilyKey::Monospace, 16.0, 20.0),
             ),
+            (
+                "family",
+                ShapeRequest::line("hello", FamilyKey::SansSerif, 16.0, 20.0),
+            ),
+            (
+                "named family",
+                ShapeRequest::line("hello", FamilyKey::named("Menlo"), 16.0, 20.0),
+            ),
+            (
+                "font size",
+                ShapeRequest::line("hello", FamilyKey::Monospace, 17.0, 20.0),
+            ),
+            (
+                "line height",
+                ShapeRequest::line("hello", FamilyKey::Monospace, 16.0, 21.0),
+            ),
+            ("wrap", base.clone().wrapped(100.0, 40.0)),
+            ("wrap width", base.clone().wrapped(100.0, 40.0)),
             (
                 "colour",
                 ShapeRequest::new(
@@ -575,7 +583,11 @@ mod tests {
             base.clone().wrapped(100.0, 40.0),
             "width-only and width+height must not share a key",
         );
-        assert_ne!(base.clone().wrapped_width(100.0), base, "wrapping changes the key");
+        assert_ne!(
+            base.clone().wrapped_width(100.0),
+            base,
+            "wrapping changes the key"
+        );
     }
 
     #[test]
@@ -671,7 +683,10 @@ mod tests {
         let s = req("hello").build(&mut fs);
         assert!(s.width > 0.0, "a non-empty run has width");
         assert_eq!(s.lines, 1);
-        assert!((s.height - 20.0).abs() < 0.001, "height = lines * line_height");
+        assert!(
+            (s.height - 20.0).abs() < 0.001,
+            "height = lines * line_height"
+        );
     }
 
     /// Empty text still reports one line, so a caller advancing by

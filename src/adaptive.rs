@@ -176,7 +176,9 @@ pub fn detect_displays<I>(
 where
     I: IntoIterator<Item = winit::monitor::MonitorHandle>,
 {
-    let primary_name = primary.as_ref().and_then(winit::monitor::MonitorHandle::name);
+    let primary_name = primary
+        .as_ref()
+        .and_then(winit::monitor::MonitorHandle::name);
     monitors
         .into_iter()
         .enumerate()
@@ -435,7 +437,12 @@ mod tests {
             platform: detect_platform(),
             high_refresh: true,
         };
-        assert!(posture.displays.iter().any(|d| d.refresh_hz.is_some_and(|hz| hz > 60)));
+        assert!(
+            posture
+                .displays
+                .iter()
+                .any(|d| d.refresh_hz.is_some_and(|hz| hz > 60))
+        );
     }
 
     #[test]

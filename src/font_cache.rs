@@ -22,7 +22,7 @@
 
 use std::path::{Path, PathBuf};
 
-use fontdb::{Database, FaceInfo, Language, Source, Stretch, Style, Weight, ID};
+use fontdb::{Database, FaceInfo, ID, Language, Source, Stretch, Style, Weight};
 use serde::{Deserialize, Serialize};
 
 /// Bump on any change to `CachedFace`'s layout.
@@ -97,7 +97,7 @@ impl CachedFace {
 
     fn into_face_info(self) -> FaceInfo {
         FaceInfo {
-            id: ID::dummy(),  // overwritten by push_face_info
+            id: ID::dummy(), // overwritten by push_face_info
             source: Source::File(self.path),
             index: self.index,
             families: self
@@ -224,10 +224,7 @@ pub fn save_cache(db: &Database) {
             return;
         }
     }
-    let faces: Vec<CachedFace> = db
-        .faces()
-        .filter_map(CachedFace::from_face)
-        .collect();
+    let faces: Vec<CachedFace> = db.faces().filter_map(CachedFace::from_face).collect();
     let cached = CachedDb {
         schema_version: CACHE_SCHEMA_VERSION,
         fingerprint: compute_fingerprint(),
@@ -257,10 +254,7 @@ pub fn save_cache(db: &Database) {
 /// Write `bytes` to `path` via a temp file + rename so a
 /// crashing process never leaves a half-written cache.
 fn atomic_write(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
-    let tmp = path.with_extension(format!(
-        "tmp.{}",
-        std::process::id()
-    ));
+    let tmp = path.with_extension(format!("tmp.{}", std::process::id()));
     std::fs::write(&tmp, bytes)?;
     std::fs::rename(&tmp, path)?;
     Ok(())

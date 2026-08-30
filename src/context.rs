@@ -130,9 +130,8 @@ impl GpuContext {
                 .into_iter()
                 .find(|a| {
                     a.get_info().device_type != wgpu::DeviceType::Cpu
-                        && compatible_surface.is_none_or(|s| {
-                            !s.get_capabilities(a).formats.is_empty()
-                        })
+                        && compatible_surface
+                            .is_none_or(|s| !s.get_capabilities(a).formats.is_empty())
                 });
             match hardware {
                 Some(hw) => {

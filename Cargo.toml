@@ -18,6 +18,9 @@ missing_errors_doc = "allow"
 missing_panics_doc = "allow"
 
 [dependencies]
+# kentou moved to mekuri (zero-dependency, no_std) so consumers that must not
+# take a GPU stack can reach it. `garasu::kentou` stays as a re-export.
+mekuri = "0.1.2"
 wgpu = "25"
 winit = "0.30"
 # Instanced GPU pipelines (quad.rs) need #[repr(C)] Pod/Zeroable structs

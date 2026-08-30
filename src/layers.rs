@@ -172,7 +172,12 @@ impl TextLayerStack {
     pub fn create_buffer(&mut self, text: &str, font_size: f32, line_height: f32) -> Buffer {
         let metrics = Metrics::new(font_size, line_height);
         let mut buffer = Buffer::new(&mut self.font_system, metrics);
-        buffer.set_text(&mut self.font_system, text, &Attrs::new(), Shaping::Advanced);
+        buffer.set_text(
+            &mut self.font_system,
+            text,
+            &Attrs::new(),
+            Shaping::Advanced,
+        );
         buffer
     }
 
@@ -344,7 +349,9 @@ impl<'s> Frame<'s> {
         pass: &mut wgpu::RenderPass<'pass>,
     ) -> Result<(), RenderError> {
         let layer = &self.stack.layers[token.id.0];
-        layer.renderer.render(&self.stack.atlas, &layer.viewport, pass)
+        layer
+            .renderer
+            .render(&self.stack.atlas, &layer.viewport, pass)
     }
 
     /// Build a plain text buffer while the frame holds the stack. Delegates to
@@ -516,7 +523,7 @@ mod tests {
     #[cfg(feature = "gpu_tests")]
     #[test]
     fn top_left_terminal_survives_centered_overlay() {
-        use crate::headless::{pixel_at, HeadlessTarget};
+        use crate::headless::{HeadlessTarget, pixel_at};
         let gpu = pollster::block_on(crate::GpuContext::new()).expect("gpu");
         let (w, h) = (256u32, 128u32);
         let fmt = wgpu::TextureFormat::Rgba8UnormSrgb;
@@ -526,8 +533,7 @@ mod tests {
         let ovl = stack.add_layer(&gpu.device);
 
         let term_only = render_two_layer_frame(&gpu, &target, &mut stack, term, ovl, w, h, false);
-        let with_overlay =
-            render_two_layer_frame(&gpu, &target, &mut stack, term, ovl, w, h, true);
+        let with_overlay = render_two_layer_frame(&gpu, &target, &mut stack, term, ovl, w, h, true);
 
         // Top-left quadrant must be untouched by the centered overlay.
         let (qx, qy) = (72u32, 56u32);
@@ -623,7 +629,9 @@ mod tests {
                     occlusion_query_set: None,
                 });
                 // A render error (e.g. RemovedFromAtlas) fails the gate.
-                frame.render(tok, &mut p).expect("layer render must not error");
+                frame
+                    .render(tok, &mut p)
+                    .expect("layer render must not error");
             }
             drop(frame);
             gpu.queue.submit(std::iter::once(enc.finish()));
@@ -637,11 +645,8 @@ mod tests {
     #[test]
     fn add_layer_mints_distinct_ids() {
         let gpu = pollster::block_on(crate::GpuContext::new()).expect("gpu");
-        let mut stack = TextLayerStack::new(
-            &gpu.device,
-            &gpu.queue,
-            wgpu::TextureFormat::Rgba8UnormSrgb,
-        );
+        let mut stack =
+            TextLayerStack::new(&gpu.device, &gpu.queue, wgpu::TextureFormat::Rgba8UnormSrgb);
         let a = stack.add_layer(&gpu.device);
         let b = stack.add_layer(&gpu.device);
         let c = stack.add_layer(&gpu.device);

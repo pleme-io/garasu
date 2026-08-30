@@ -315,9 +315,7 @@ pub fn build_font_system() -> FontSystem {
 pub(crate) fn take_or_build_font_system() -> FontSystem {
     if let Some(lock) = FONT_PRELOAD.get() {
         if let Some(handle) = lock.lock().expect("font preload mutex poisoned").take() {
-            return handle
-                .join()
-                .expect("font preload thread panicked");
+            return handle.join().expect("font preload thread panicked");
         }
     }
     // No preload — build synchronously (same emoji-guaranteed path).
@@ -492,7 +490,10 @@ mod color_emoji_regression {
         let mut buf = Buffer::new(fs, Metrics::new(16.0, 20.0));
         buf.set_text(fs, s, &Attrs::new(), Shaping::Advanced);
         buf.shape_until_scroll(fs, false);
-        buf.layout_runs().flat_map(|r| r.glyphs.iter()).map(|g| g.glyph_id).next()
+        buf.layout_runs()
+            .flat_map(|r| r.glyphs.iter())
+            .map(|g| g.glyph_id)
+            .next()
     }
 
     /// The full-pipeline invariant: on an emoji-capable host, every
@@ -559,7 +560,10 @@ mod color_emoji_regression {
     #[test]
     fn emoji_fallback_closes_bare_host_gap() {
         let mut db = fontdb::Database::new();
-        assert!(!super::db_has_emoji(&db), "fresh empty db has no emoji family");
+        assert!(
+            !super::db_has_emoji(&db),
+            "fresh empty db has no emoji family"
+        );
 
         let loaded = super::ensure_emoji_fallback(&mut db);
         if !loaded {
@@ -590,7 +594,10 @@ mod color_emoji_regression {
         }
         let mut db = fontdb::Database::new();
         db.load_system_fonts();
-        assert!(super::db_has_emoji(&db), "host scan carries an emoji family");
+        assert!(
+            super::db_has_emoji(&db),
+            "host scan carries an emoji family"
+        );
         assert!(
             !super::ensure_emoji_fallback(&mut db),
             "fallback must be a no-op when the host already has emoji"
@@ -626,10 +633,15 @@ mod color_emoji_regression {
 
         let mut failures = Vec::new();
         for (name, want) in baseline {
-            let got = first_glyph(&mut reloaded, COLOR_EMOJI.iter().find(|e| e.0 == name).unwrap().1)
-                .unwrap_or(0);
+            let got = first_glyph(
+                &mut reloaded,
+                COLOR_EMOJI.iter().find(|e| e.0 == name).unwrap().1,
+            )
+            .unwrap_or(0);
             if got == 0 {
-                failures.push(format!("{name}: .notdef after cache round-trip (was {want})"));
+                failures.push(format!(
+                    "{name}: .notdef after cache round-trip (was {want})"
+                ));
             }
         }
         assert!(
