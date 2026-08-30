@@ -307,6 +307,32 @@ impl<'p> PanePass<'_, 'p> {
         self.pass.set_vertex_buffer(0, vertices);
         self.pass.draw(vertex_range, instance_range);
     }
+
+    /// Draw garasu's OWN [`QuadPipeline`] through the contained pass.
+    ///
+    /// ── ★ WITHOUT THIS, GARASU COULD NOT CONTAIN ITS OWN QUADS ─────────────
+    ///
+    /// [`Self::instanced`] narrows a CALLER's pipeline, because the caller
+    /// holds its own `RenderPipeline`, `BindGroup` and vertex buffer and can
+    /// hand them over. `QuadPipeline` holds all three privately and publishes
+    /// only `new` / `update_resolution` / `draw` / `capacity`, so there was no
+    /// expression — for any caller, including garasu — that put a garasu quad
+    /// inside a `PaneRect`. The containment type existed and the crate's own
+    /// primary drawing primitive could not reach it.
+    ///
+    /// This closes that without widening anything: `QuadPipeline::draw` takes
+    /// a `&mut wgpu::RenderPass`, and the pass handed to it here is this
+    /// pane's — already scissored. The pass is reborrowed, never returned, so
+    /// `PanePass` still exposes no route to the inner pass.
+    pub fn quads(
+        &mut self,
+        pipeline: &mut crate::quad::QuadPipeline,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        instances: &[crate::quad::QuadInstance],
+    ) {
+        pipeline.draw(device, queue, self.pass, instances);
+    }
 }
 
 #[cfg(test)]
@@ -469,6 +495,14 @@ mod tests {
             "fn pass(",
             "fn render_pass(",
             "fn into_inner(",
+            // ★ ADDED 2026-08-30, when `quads()` was added to the impl block.
+            // The names above only catch a leak someone names honestly. This
+            // catches it by RETURN TYPE, so `fn borrow_pass()` — or any other
+            // spelling — is caught too. Comment lines are stripped above, so
+            // the module docs may keep discussing the type freely.
+            "-> &mut wgpu::RenderPass",
+            "-> &'a mut wgpu::RenderPass",
+            "-> &'p mut wgpu::RenderPass",
         ];
         for tok in banned {
             assert!(
