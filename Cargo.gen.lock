@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "cargo_lock_sha256": "f73a7deed08f1b02a48e487761abfd6eb1ae148614f2e192c56044e242a225e2",
+  "cargo_lock_sha256": "0d9f654b08a1801bd5d46876e04c181b6f9df29b98042d413bc63145a7d440a7",
   "manifest_sha256": {
-    "Cargo.toml": "31cd48665866b907f9501a60e86f985bb22ca6507b4a705c35474e573824d3b4"
+    "Cargo.toml": "0141626ac4dcd18b55e743ed40665378ab678bbe4414f4917e21c242a0a06079"
   },
   "target_resolves": {
     "base": {
@@ -629,7 +629,7 @@
           "std"
         ]
       },
-      "garasu-0.1.16": {
+      "garasu-0.1.17": {
         "runtime_dependencies": [
           {
             "name": "bincode",
@@ -1680,7 +1680,7 @@
           },
           {
             "name": "smallvec",
-            "package_key": "smallvec-1.15.2",
+            "package_key": "smallvec-1.16.0",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1865,7 +1865,7 @@
           },
           {
             "name": "smallvec",
-            "package_key": "smallvec-1.15.2",
+            "package_key": "smallvec-1.16.0",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2142,7 +2142,7 @@
           "std"
         ]
       },
-      "smallvec-1.15.2": {
+      "smallvec-1.16.0": {
         "runtime_dependencies": [],
         "build_dependencies": [],
         "features": [
@@ -2810,7 +2810,7 @@
           },
           {
             "name": "smallvec",
-            "package_key": "smallvec-1.15.2",
+            "package_key": "smallvec-1.16.0",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2820,7 +2820,7 @@
           },
           {
             "name": "smallvec",
-            "package_key": "smallvec-1.15.2",
+            "package_key": "smallvec-1.16.0",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4152,7 +4152,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -4513,7 +4513,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [
                   "union"
@@ -6143,7 +6143,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [
                   "const_generics",
@@ -6710,7 +6710,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -7034,7 +7034,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [
                   "union"
@@ -8934,7 +8934,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [
                   "const_generics",
@@ -9501,7 +9501,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -9825,7 +9825,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [
                   "union"
@@ -11468,7 +11468,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -11829,7 +11829,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [
                   "union"
@@ -13474,7 +13474,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [
                   "const_generics",
@@ -14041,7 +14041,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -14365,7 +14365,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [
                   "union"
@@ -16280,7 +16280,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [
                   "const_generics",
@@ -16847,7 +16847,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -17171,7 +17171,7 @@
               },
               {
                 "name": "smallvec",
-                "package_key": "smallvec-1.15.2",
+                "package_key": "smallvec-1.16.0",
                 "kind": "normal",
                 "features": [
                   "union"
@@ -17895,7 +17895,7 @@
     "foreign-types-shared-0.3.1": {
       "edition": "2018"
     },
-    "garasu-0.1.16": {
+    "garasu-0.1.17": {
       "edition": "2024",
       "build_script": "build.rs",
       "lib_target": {
@@ -18175,7 +18175,7 @@
       "edition": "2018",
       "build_script": "build.rs"
     },
-    "smallvec-1.15.2": {
+    "smallvec-1.16.0": {
       "edition": "2018"
     },
     "smithay-client-toolkit-0.19.2": {
