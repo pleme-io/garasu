@@ -125,32 +125,97 @@ impl GpuContext {
             // capabilities, which then fails later and far away. So when we
             // have a surface, an adapter only counts if it advertises at least
             // one format for it.
-            let hardware = instance
+            // ★ ABSENT AND REFUSED ARE DIFFERENT ANSWERS — separated 2026-09-03
+            // because collapsing them cost a real investigation.
+            //
+            // plo has a GeForce RTX 3070, driver 580.142 loaded with seven
+            // kernel modules, live `/dev/nvidia*` nodes and `nvidia_icd.json`
+            // installed — and this code logged **"no hardware GPU adapter on
+            // this machine"**. That sentence is false, and it is false in the
+            // most expensive direction: it sends the reader to check hardware
+            // and drivers, all of which are fine, instead of to the one thing
+            // that is not.
+            //
+            // The real cause is one layer up. omoya is a CPU compositor and so
+            // advertises **linear-modifier dmabuf only** (`nuri_renderer.rs`:
+            // a tiled modifier is a layout only a GPU can decode, and a CPU
+            // blitter reading it paints structured noise). NVIDIA does not
+            // present linear. So the adapter exists, works, and simply cannot
+            // present to THIS surface — a refusal with a reason, not an
+            // absence. Every GPU client on that seat therefore renders on
+            // llvmpipe, which is why the terminal feels slow.
+            //
+            // So the two are counted separately: hardware adapters that exist
+            // at all, and the subset that can present here.
+            let hardware_adapters: Vec<_> = instance
                 .enumerate_adapters(wgpu::Backends::all())
                 .into_iter()
-                .find(|a| {
-                    a.get_info().device_type != wgpu::DeviceType::Cpu
-                        && compatible_surface
-                            .is_none_or(|s| !s.get_capabilities(a).formats.is_empty())
-                });
-            match hardware {
-                Some(hw) => {
+                .filter(|a| a.get_info().device_type != wgpu::DeviceType::Cpu)
+                .collect();
+            // `enumerate_adapters` does not filter by surface compatibility,
+            // and an incompatible adapter does not error — it returns EMPTY
+            // capabilities, which fails later and far away. So with a surface
+            // in hand, an adapter only counts if it advertises a format for it.
+            let presentable = hardware_adapters.into_iter().fold(
+                (None, Vec::new()),
+                |(chosen, mut rejected), a| {
+                    if chosen.is_some() {
+                        rejected.push(a.get_info().name);
+                        return (chosen, rejected);
+                    }
+                    let can_present = compatible_surface
+                        .is_none_or(|s| !s.get_capabilities(&a).formats.is_empty());
+                    if can_present {
+                        (Some(a), rejected)
+                    } else {
+                        rejected.push(a.get_info().name);
+                        (None, rejected)
+                    }
+                },
+            );
+            // ★ The verdict is computed ONCE, by the tested classifier, and
+            // logged on every arm — so the branch taken and the word reported
+            // cannot disagree. Two independent decisions is how the old
+            // message came to say "absent" about a refusal.
+            let verdict = CpuFallback::classify(presentable.0.is_some(), presentable.1.len());
+            match presentable {
+                (Some(hw), _) => {
                     tracing::info!(
                         target: "garasu::ctx",
                         rejected = ?adapter.get_info().name,
                         chosen = ?hw.get_info().name,
                         device_type = ?hw.get_info().device_type,
+                        verdict = ?verdict,
                         "the requested power preference selected a CPU adapter; \
                          a hardware adapter exists and was preferred"
                     );
                     hw
                 }
-                None => {
-                    // Genuinely no GPU. Say so once, loudly, rather than
-                    // letting a consumer wonder why it renders at 30 fps.
+                // ★ REFUSED: the hardware is here and cannot present.
+                (None, unpresentable) if !unpresentable.is_empty() => {
                     tracing::warn!(
                         target: "garasu::ctx",
                         adapter = ?adapter.get_info().name,
+                        hardware_found = ?unpresentable,
+                        verdict = ?verdict,
+                        "a hardware GPU is present but CANNOT PRESENT to this \
+                         surface, so rendering falls back to the CPU. This is a \
+                         surface-compatibility refusal, NOT a missing driver — \
+                         check the compositor's advertised dmabuf formats and \
+                         modifiers before checking drivers. A CPU compositor \
+                         advertising linear-only modifiers will refuse every \
+                         GPU that cannot present linear."
+                    );
+                    adapter
+                }
+                // ★ ABSENT: there is genuinely nothing. Headless CI, a VM with
+                // no passthrough. Say so once, loudly, rather than letting a
+                // consumer wonder why it renders at 30 fps.
+                (None, _) => {
+                    tracing::warn!(
+                        target: "garasu::ctx",
+                        adapter = ?adapter.get_info().name,
+                        verdict = ?verdict,
                         "no hardware GPU adapter on this machine — rendering on the CPU"
                     );
                     adapter
@@ -224,5 +289,111 @@ impl GpuContext {
         );
 
         format
+    }
+}
+
+/// Why a CPU adapter ended up in use — `absent` and `refused` kept apart.
+///
+/// ── ★ WHY THIS IS A TYPE AND NOT TWO LOG STRINGS ─────────────────────────
+/// The two cases demand opposite investigations. *Absent* means buy or enable
+/// a GPU. *Refused* means the GPU is fine and the SURFACE will not take it —
+/// on a pleme-io seat, a CPU compositor advertising linear-only dmabuf
+/// modifiers, which NVIDIA cannot present. Collapsing them into "no hardware
+/// GPU adapter on this machine" cost a real investigation on plo 2026-09-03:
+/// the machine has an RTX 3070 with the driver loaded, and the message said
+/// it had no GPU.
+///
+/// This is `kotae`'s distinction — an answer must say WHICH of the things
+/// happened — applied to adapter selection.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CpuFallback {
+    /// Not a fallback: a hardware adapter was found and preferred.
+    NotAFallback,
+    /// Hardware exists; none of it can present to this surface.
+    Refused {
+        /// How many hardware adapters were seen and could not present.
+        hardware_found: usize,
+    },
+    /// No hardware adapter exists at all — headless CI, a VM without passthrough.
+    Absent,
+}
+
+impl CpuFallback {
+    /// Classify from the two counts the selection actually produces.
+    ///
+    /// Deliberately takes counts rather than adapters so it is testable on a
+    /// machine with no GPU — which is most CI, and is exactly where a wrong
+    /// verdict would otherwise go unnoticed.
+    #[must_use]
+    pub fn classify(chose_hardware: bool, unpresentable: usize) -> Self {
+        if chose_hardware {
+            Self::NotAFallback
+        } else if unpresentable > 0 {
+            Self::Refused {
+                hardware_found: unpresentable,
+            }
+        } else {
+            Self::Absent
+        }
+    }
+
+    /// True when the operator should look at the COMPOSITOR, not the drivers.
+    #[must_use]
+    pub fn blames_the_surface(&self) -> bool {
+        matches!(self, Self::Refused { .. })
+    }
+}
+
+#[cfg(test)]
+mod cpu_fallback_tests {
+    use super::CpuFallback;
+
+    /// ★ THE CASE THAT WAS MISREPORTED ON plo, pinned.
+    ///
+    /// One hardware adapter seen, none able to present. Before this type the
+    /// code said "no hardware GPU adapter on this machine" — with an RTX 3070
+    /// in the box and its driver loaded.
+    #[test]
+    fn hardware_that_cannot_present_is_refused_not_absent() {
+        let v = CpuFallback::classify(false, 1);
+        assert_eq!(v, CpuFallback::Refused { hardware_found: 1 });
+        assert_ne!(
+            v,
+            CpuFallback::Absent,
+            "reporting a refusal as an absence sends the reader to check \
+             drivers that are already working"
+        );
+        assert!(
+            v.blames_the_surface(),
+            "a refusal must point at the surface — that is the whole reason \
+             the two cases are distinguishable"
+        );
+    }
+
+    /// ★ AND THE CONVERSE, so the type is not just always-Refused.
+    #[test]
+    fn nothing_at_all_is_absent_and_blames_no_surface() {
+        let v = CpuFallback::classify(false, 0);
+        assert_eq!(v, CpuFallback::Absent);
+        assert!(
+            !v.blames_the_surface(),
+            "with no hardware at all there is no surface refusal to report, \
+             and claiming one would send the reader to a compositor that is \
+             behaving correctly"
+        );
+    }
+
+    /// ★ Choosing hardware is not a fallback, however many were rejected on
+    /// the way — a machine with several GPUs must not report a CPU fallback
+    /// merely because one of them could not present.
+    #[test]
+    fn choosing_hardware_is_never_a_fallback() {
+        for rejected in [0usize, 1, 7] {
+            assert_eq!(
+                CpuFallback::classify(true, rejected),
+                CpuFallback::NotAFallback,
+                "rejected={rejected} still chose hardware"
+            );
+        }
     }
 }
