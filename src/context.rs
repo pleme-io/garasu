@@ -266,6 +266,27 @@ impl GpuContext {
         width: u32,
         height: u32,
     ) -> wgpu::TextureFormat {
+        self.configure_surface_with_usage(
+            surface,
+            width,
+            height,
+            wgpu::TextureUsages::RENDER_ATTACHMENT,
+        )
+    }
+
+    /// [`Self::configure_surface`] with the surface textures' usage
+    /// named. `RENDER_ATTACHMENT | COPY_SRC` lets a caller read back
+    /// the texture it presents ([`crate::headless::read_texture`]);
+    /// on Metal any usage beyond `RENDER_ATTACHMENT` turns off the
+    /// layer's `framebufferOnly`. Check `get_capabilities().usages`
+    /// first: a backend that lacks a usage refuses the configuration.
+    pub fn configure_surface_with_usage(
+        &self,
+        surface: &wgpu::Surface<'_>,
+        width: u32,
+        height: u32,
+        usage: wgpu::TextureUsages,
+    ) -> wgpu::TextureFormat {
         let caps = surface.get_capabilities(&self.adapter);
         let format = caps
             .formats
@@ -277,7 +298,7 @@ impl GpuContext {
         surface.configure(
             &self.device,
             &wgpu::SurfaceConfiguration {
-                usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+                usage,
                 format,
                 width,
                 height,

@@ -10,7 +10,7 @@ GPU rendering engine for pleme-io applications. Provides a reusable wgpu + winit
 | `text` | glyphon text layout and rasterization |
 | `shader` | WGSL post-processing pipeline (ghostty/tobira pattern) |
 | `window` | winit window creation with platform defaults |
-| `frame` | upload a CPU rgb8 frame as a texture and draw it |
+| `frame` | upload a CPU rgb8 frame as a texture, draw it, and check a read-back of what it drew |
 | `canvas` | the `garasu-canvas/1` socket server and the `garasu-canvas` binary ([protocol](docs/canvas-protocol.md)) |
 | `error` | Unified error type |
 

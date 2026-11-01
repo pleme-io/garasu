@@ -3,6 +3,7 @@ use std::sync::mpsc::{SyncSender, sync_channel};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
 
+use serde_json::{Value, json};
 use winit::application::ApplicationHandler;
 use winit::dpi::LogicalSize;
 use winit::event::WindowEvent;
@@ -10,12 +11,21 @@ use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop, EventLoopProxy}
 use winit::window::{Window, WindowId};
 
 use super::protocol::{Frame, Refusal, Spec};
-use super::server::{CanvasId, Server, Sink};
+use super::server::{CanvasId, Report, Server, Sink};
 use crate::context::GpuContext;
 use crate::error::GarasuError;
-use crate::frame::{FramePipeline, fit};
+use crate::frame::{FramePipeline, Readback};
 
 const OPEN_WAIT: Duration = Duration::from_secs(4);
+
+/// How [`run`] shows its canvases. With `verify`, each window's
+/// surface is configured `RENDER_ATTACHMENT | COPY_SRC`, and after
+/// each draw of a presented frame the server reads that surface
+/// texture back and reports `verified`, `mismatch` or `unverified`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Options {
+    pub verify: bool,
+}
 
 type Refused = Arc<Mutex<HashMap<CanvasId, Refusal>>>;
 
@@ -78,7 +88,15 @@ struct Shown {
     canvas: CanvasId,
     window: Arc<Window>,
     surface: wgpu::Surface<'static>,
+    usage: wgpu::TextureUsages,
     frame: FramePipeline,
+    presented: u64,
+    sent: Option<Sent>,
+}
+
+struct Sent {
+    number: u64,
+    frame: Frame,
 }
 
 struct Canvases {
@@ -86,9 +104,11 @@ struct Canvases {
     shown: HashMap<WindowId, Shown>,
     windows: HashMap<CanvasId, WindowId>,
     refused: Refused,
+    options: Options,
+    report: Report,
 }
 
-pub fn run(server: Server) -> Result<(), GarasuError> {
+pub fn run(server: Server, options: Options) -> Result<(), GarasuError> {
     let event_loop = EventLoop::<Command>::with_user_event()
         .build()
         .map_err(|e| GarasuError::Window(e.to_string()))?;
@@ -98,12 +118,15 @@ pub fn run(server: Server) -> Result<(), GarasuError> {
         proxy: event_loop.create_proxy(),
         refused: Arc::clone(&refused),
     });
+    let report = server.report();
     let _running = server.spawn(sink)?;
     let mut canvases = Canvases {
         gpu: None,
         shown: HashMap::new(),
         windows: HashMap::new(),
         refused,
+        options,
+        report,
     };
     event_loop
         .run_app(&mut canvases)
@@ -144,11 +167,23 @@ impl Canvases {
             surface
         };
         let gpu = self.gpu.as_ref().ok_or_else(|| unavailable("no GPU"))?;
-        if surface.get_capabilities(&gpu.adapter).formats.is_empty() {
+        let caps = surface.get_capabilities(&gpu.adapter);
+        if caps.formats.is_empty() {
             return Err(unavailable("the GPU cannot present to this window"));
         }
+        let readable = caps.usages.contains(wgpu::TextureUsages::COPY_SRC);
+        let usage = if self.options.verify && readable {
+            wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC
+        } else {
+            wgpu::TextureUsages::RENDER_ATTACHMENT
+        };
         let size = window.inner_size();
-        let format = gpu.configure_surface(&surface, size.width.max(1), size.height.max(1));
+        let format = gpu.configure_surface_with_usage(
+            &surface,
+            size.width.max(1),
+            size.height.max(1),
+            usage,
+        );
         let frame = FramePipeline::new(&gpu.device, format, spec.width, spec.height);
         window.request_redraw();
         self.windows.insert(id, window.id());
@@ -158,19 +193,23 @@ impl Canvases {
                 canvas: id,
                 window,
                 surface,
+                usage,
                 frame,
+                presented: 0,
+                sent: None,
             },
         );
         Ok(())
     }
 
-    fn present(&mut self, id: CanvasId, frame: &Frame) {
+    fn present(&mut self, id: CanvasId, frame: Frame) {
         let (Some(gpu), Some(window)) = (&self.gpu, self.windows.get(&id)) else {
             return;
         };
         let Some(shown) = self.shown.get_mut(window) else {
             return;
         };
+        shown.presented += 1;
         match shown.frame.upload_rgb8(
             &gpu.device,
             &gpu.queue,
@@ -178,7 +217,15 @@ impl Canvases {
             frame.height,
             &frame.rgb,
         ) {
-            Ok(()) => shown.window.request_redraw(),
+            Ok(()) => {
+                if self.options.verify {
+                    shown.sent = Some(Sent {
+                        number: shown.presented,
+                        frame,
+                    });
+                }
+                shown.window.request_redraw();
+            }
             Err(e) => {
                 tracing::warn!(target: "garasu::canvas", canvas = id, error = %e, "frame upload failed");
             }
@@ -194,7 +241,12 @@ impl Canvases {
     fn reconfigure(&self, window: WindowId) {
         if let (Some(gpu), Some(shown)) = (&self.gpu, self.shown.get(&window)) {
             let size = shown.window.inner_size();
-            gpu.configure_surface(&shown.surface, size.width.max(1), size.height.max(1));
+            gpu.configure_surface_with_usage(
+                &shown.surface,
+                size.width.max(1),
+                size.height.max(1),
+                shown.usage,
+            );
             shown.window.request_redraw();
         }
     }
@@ -222,33 +274,65 @@ impl Canvases {
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("garasu_canvas_encoder"),
             });
-        {
-            let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: Some("garasu_canvas_pass"),
-                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
-                        store: wgpu::StoreOp::Store,
-                    },
-                })],
-                depth_stencil_attachment: None,
-                timestamp_writes: None,
-                occlusion_query_set: None,
-            });
-            let target = texture.texture.size();
-            let [x, y, w, h] = fit(
-                (shown.frame.width(), shown.frame.height()),
-                (target.width, target.height),
-            );
-            pass.set_viewport(x, y, w, h, 0.0, 1.0);
-            shown.frame.draw(&mut pass);
-        }
+        let target = texture.texture.size();
+        shown
+            .frame
+            .render(&mut encoder, &view, (target.width, target.height));
         gpu.queue.submit(std::iter::once(encoder.finish()));
+        let verdict = shown
+            .sent
+            .as_ref()
+            .map(|sent| verdict(gpu, shown, &texture.texture, sent));
         shown.window.pre_present_notify();
         texture.present();
+        if let Some(event) = verdict {
+            self.report.emit(&event);
+        }
     }
+}
+
+fn verdict(gpu: &GpuContext, shown: &Shown, texture: &wgpu::Texture, sent: &Sent) -> Value {
+    let unverified = |reason: String| {
+        json!({
+            "event": "unverified",
+            "canvas": shown.canvas,
+            "frame": sent.number,
+            "reason": reason,
+        })
+    };
+    if !shown.usage.contains(wgpu::TextureUsages::COPY_SRC) {
+        return unverified("this backend cannot copy from a surface texture".into());
+    }
+    let checked = Readback::read(gpu, texture).and_then(|readback| {
+        let frame = &sent.frame;
+        readback
+            .verify(frame.width, frame.height, &frame.rgb)
+            .map(|verdict| (readback, verdict))
+    });
+    let (readback, verdict) = match checked {
+        Ok(checked) => checked,
+        Err(e) => return unverified(e.to_string()),
+    };
+    let mut event = json!({
+        "event": "verified",
+        "canvas": shown.canvas,
+        "frame": sent.number,
+        "blake3": verdict.blake3.to_hex().to_string(),
+        "surface": {
+            "width": readback.width(),
+            "height": readback.height(),
+            "format": format!("{:?}", readback.format()),
+            "blake3": verdict.surface.to_hex().to_string(),
+        },
+    });
+    if let Some(mismatch) = verdict.mismatch {
+        event["event"] = json!("mismatch");
+        event["x"] = json!(mismatch.x);
+        event["y"] = json!(mismatch.y);
+        event["want"] = json!(mismatch.want);
+        event["got"] = json!(mismatch.got);
+    }
+    event
 }
 
 impl ApplicationHandler<Command> for Canvases {
@@ -262,7 +346,7 @@ impl ApplicationHandler<Command> for Canvases {
                     self.close(id);
                 }
             }
-            Command::Present(id, frame) => self.present(id, &frame),
+            Command::Present(id, frame) => self.present(id, frame),
             Command::Close(id) => self.close(id),
         }
     }

@@ -132,7 +132,7 @@ then reads the refusal and does not get a broken pipe.
 ## The server
 
 ```text
-garasu-canvas [--headless] [--socket PATH]
+garasu-canvas [--headless | --verify] [--socket PATH]
 ```
 
 - With no flag, the server opens one window for each canvas. It draws each
@@ -140,6 +140,8 @@ garasu-canvas [--headless] [--socket PATH]
   full-screen triangle.
 - `--headless` opens no window and needs no GPU. The server keeps the last
   frame of each canvas in memory and counts the frames. Use it in CI.
+- `--verify` shows windows as with no flag, and checks each window against
+  the frames it shows. `--verify` and `--headless` together are refused.
 
 The server writes one JSON line to standard output for each event:
 
@@ -156,4 +158,58 @@ that comes before `open`.
 
 In Rust, `garasu::canvas::Server` binds the socket. It serves any
 `garasu::canvas::Sink`. `HeadlessCanvases` is the headless sink, and
-`canvas::window::run` is the windowed one.
+`canvas::window::run(server, Options { verify })` is the windowed one.
+
+### Verify
+
+With `--verify`, the server configures each window's surface with the
+`COPY_SRC` usage as well as `RENDER_ATTACHMENT`. Without the flag it asks for
+`RENDER_ATTACHMENT` only. On Metal, a usage other than `RENDER_ATTACHMENT`
+alone turns off the layer's `framebufferOnly`, so the drawable is readable.
+
+After the server draws a presented frame into the surface texture, and before
+it presents that texture, it copies the same texture into a buffer and maps
+it. It reads the window's own surface texture through wgpu, which is the
+texture it then presents. It does not capture the screen, so it needs no
+Screen Recording permission. What the compositor does with the texture after
+`present` is outside this check.
+
+The server compares each pixel it read with what `FramePipeline` draws for
+the frame at the window's size: the frame fitted to the window, nearest pixel,
+black around it. Two kinds of pixel may show either of two colours, because
+GPUs rasterize them differently: a pixel centre within 1/64 of a pixel of a
+texel edge, and a pixel that a fractional edge of the fitted frame cuts. At a
+whole-number scale and offset there are none of either.
+
+The server then writes one more event for the draw:
+
+```json
+{"blake3":"…","canvas":1,"event":"verified","frame":1,"surface":{"blake3":"…","format":"Bgra8UnormSrgb","height":400,"width":640}}
+{"blake3":"…","canvas":1,"event":"mismatch","frame":1,"got":[18,52,86],"surface":{…},"want":[255,0,0],"x":160,"y":80}
+{"canvas":1,"event":"unverified","frame":1,"reason":"…"}
+```
+
+- `frame` is the number of the presented frame that the window showed.
+- `blake3` is the hash of the frame as read back at its own size: one pixel
+  from the middle of each frame pixel's area. When the window shows the frame
+  at a scale of 1 or more, it equals the `blake3` of the `present` event.
+- `surface` is the read-back texture: its size in pixels, its format and the
+  hash of its pixels as rgb8.
+- `mismatch` names the first pixel, row by row from the top left, that is not
+  the frame. `x` and `y` are surface pixels. `want` is the frame's colour
+  there and `got` is the colour read back.
+- `unverified` means the server could not read the texture back. `reason`
+  says why, for example a backend that can not copy from a surface texture.
+
+The server checks each draw of a frame, so a resize checks the frame again at
+the new size. It does not check a window before its first frame.
+
+`garasu::frame::Readback` holds the read-back pixels and the comparison.
+`garasu::headless::read_texture` does the copy and the map, for a surface
+texture and for a `HeadlessTarget` alike. Two tests run with the `gpu_tests`
+feature. `src/frame.rs` draws a frame into an offscreen `Bgra8UnormSrgb`
+texture at four sizes, reads it back and expects `verified`, then draws the
+frame upside down and expects the first pixel that differs.
+`tests/canvas_binary.rs` starts `garasu-canvas --verify`, shows a red
+rectangle in a real window and expects `verified` with the `present` hash.
+When no display can take a window, it says so and skips.

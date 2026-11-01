@@ -33,7 +33,7 @@
 //! assert_eq!(pixels.len(), 800 * 600 * 4);
 //! ```
 
-use crate::{GpuContext, TextLayerStack};
+use crate::{GarasuError, GpuContext, TextLayerStack};
 
 /// Off-screen render target with a typed texture + view + format
 /// triple and synchronous pixel readback. Hand the [`view`] to a
@@ -124,82 +124,86 @@ impl HeadlessTarget {
     /// Uses `device.poll(Wait)` for synchronisation — fine for
     /// tests; do not call from a hot path on a real surface.
     pub fn read_pixels_rgba8(&self, gpu: &GpuContext) -> Vec<u8> {
-        let bytes_per_pixel = match self.format {
-            wgpu::TextureFormat::Rgba8Unorm
-            | wgpu::TextureFormat::Rgba8UnormSrgb
-            | wgpu::TextureFormat::Bgra8Unorm
-            | wgpu::TextureFormat::Bgra8UnormSrgb => 4u32,
-            other => panic!(
-                "HeadlessTarget::read_pixels_rgba8: unsupported format {other:?}; \
-                 only 4-bpp Rgba8/Bgra8 variants are supported"
-            ),
-        };
-        // wgpu requires the per-row byte count to be aligned to
-        // COPY_BYTES_PER_ROW_ALIGNMENT (256 today). Compute a
-        // padded row stride for the staging buffer; trim the
-        // padding on readback.
-        let unpadded_row = self.width * bytes_per_pixel;
-        let align = wgpu::COPY_BYTES_PER_ROW_ALIGNMENT;
-        let padded_row = unpadded_row.div_ceil(align) * align;
-        let buffer_size = u64::from(padded_row) * u64::from(self.height);
-
-        let staging = gpu.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("garasu-headless-staging"),
-            size: buffer_size,
-            usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ,
-            mapped_at_creation: false,
-        });
-
-        let mut encoder = gpu
-            .device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("garasu-headless-copyout"),
-            });
-        encoder.copy_texture_to_buffer(
-            wgpu::TexelCopyTextureInfo {
-                texture: &self.texture,
-                mip_level: 0,
-                origin: wgpu::Origin3d::ZERO,
-                aspect: wgpu::TextureAspect::All,
-            },
-            wgpu::TexelCopyBufferInfo {
-                buffer: &staging,
-                layout: wgpu::TexelCopyBufferLayout {
-                    offset: 0,
-                    bytes_per_row: Some(padded_row),
-                    rows_per_image: Some(self.height),
-                },
-            },
-            wgpu::Extent3d {
-                width: self.width,
-                height: self.height,
-                depth_or_array_layers: 1,
-            },
-        );
-        gpu.queue.submit(std::iter::once(encoder.finish()));
-
-        // Map + wait. wgpu's map_async needs to be polled; for
-        // synchronous tests, poll(Wait) drives it.
-        let slice = staging.slice(..);
-        let (tx, rx) = std::sync::mpsc::channel();
-        slice.map_async(wgpu::MapMode::Read, move |result| {
-            let _ = tx.send(result);
-        });
-        let _ = gpu.device.poll(wgpu::PollType::Wait);
-        let _ = rx.recv().expect("map_async channel closed");
-
-        let mapped = slice.get_mapped_range();
-        // Strip per-row padding into a tight RGBA8 vec.
-        let mut out = Vec::with_capacity((self.width * self.height * bytes_per_pixel) as usize);
-        for row in 0..self.height {
-            let start = (row * padded_row) as usize;
-            let end = start + unpadded_row as usize;
-            out.extend_from_slice(&mapped[start..end]);
-        }
-        drop(mapped);
-        staging.unmap();
-        out
+        read_texture(gpu, &self.texture)
+            .unwrap_or_else(|e| panic!("HeadlessTarget::read_pixels_rgba8: {e}"))
     }
+}
+
+/// Copy a 4-byte-per-pixel texture (`Rgba8` or `Bgra8`, sRGB or not)
+/// to a staging buffer, map it, and return its pixels tightly packed,
+/// top row first, in the texture's own channel order:
+/// `width * height * 4` bytes.
+///
+/// The texture needs `COPY_SRC`. A surface texture has it only when
+/// its surface was configured with it
+/// ([`GpuContext::configure_surface_with_usage`]). Waits on the GPU
+/// with `device.poll(Wait)`.
+///
+/// # Errors
+/// [`GarasuError::Gpu`] when the format is not 4 bytes per pixel or
+/// the staging buffer does not map.
+pub fn read_texture(gpu: &GpuContext, texture: &wgpu::Texture) -> Result<Vec<u8>, GarasuError> {
+    use wgpu::TextureFormat::{Bgra8Unorm, Bgra8UnormSrgb, Rgba8Unorm, Rgba8UnormSrgb};
+    let format = texture.format();
+    if !matches!(
+        format,
+        Rgba8Unorm | Rgba8UnormSrgb | Bgra8Unorm | Bgra8UnormSrgb
+    ) {
+        return Err(GarasuError::Gpu(format!(
+            "unsupported format {format:?}; only 4-bpp Rgba8/Bgra8 variants are supported"
+        )));
+    }
+    let size = texture.size();
+    let row = size.width * 4;
+    let align = wgpu::COPY_BYTES_PER_ROW_ALIGNMENT;
+    let padded = row.div_ceil(align) * align;
+    let staging = gpu.device.create_buffer(&wgpu::BufferDescriptor {
+        label: Some("garasu-headless-staging"),
+        size: u64::from(padded) * u64::from(size.height),
+        usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ,
+        mapped_at_creation: false,
+    });
+    let mut encoder = gpu
+        .device
+        .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: Some("garasu-headless-copyout"),
+        });
+    encoder.copy_texture_to_buffer(
+        texture.as_image_copy(),
+        wgpu::TexelCopyBufferInfo {
+            buffer: &staging,
+            layout: wgpu::TexelCopyBufferLayout {
+                offset: 0,
+                bytes_per_row: Some(padded),
+                rows_per_image: Some(size.height),
+            },
+        },
+        wgpu::Extent3d {
+            depth_or_array_layers: 1,
+            ..size
+        },
+    );
+    gpu.queue.submit(std::iter::once(encoder.finish()));
+    let slice = staging.slice(..);
+    let (tx, rx) = std::sync::mpsc::channel();
+    slice.map_async(wgpu::MapMode::Read, move |result| {
+        let _ = tx.send(result);
+    });
+    gpu.device
+        .poll(wgpu::PollType::Wait)
+        .map_err(|e| GarasuError::Gpu(format!("the readback did not finish: {e}")))?;
+    rx.recv()
+        .map_err(|e| GarasuError::Gpu(format!("the readback did not map: {e}")))?
+        .map_err(|e| GarasuError::Gpu(format!("the readback did not map: {e}")))?;
+    let mapped = slice.get_mapped_range();
+    let out = mapped
+        .chunks(padded as usize)
+        .flat_map(|line| &line[..row as usize])
+        .copied()
+        .collect();
+    drop(mapped);
+    staging.unmap();
+    Ok(out)
 }
 
 /// Tiny invariant: every pixel of `rgba8` must NOT be magenta-ish

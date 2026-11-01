@@ -84,6 +84,10 @@ impl Server {
         &self.path
     }
 
+    pub(crate) fn report(&self) -> Report {
+        self.report.clone()
+    }
+
     pub fn serve(self, sink: &Arc<dyn Sink>) {
         let stop = AtomicBool::new(false);
         self.accept(sink, &stop);

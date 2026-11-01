@@ -10,7 +10,9 @@ cargo build
 cargo test --lib
 cargo test --test canvas --test canvas_binary
 cargo test --lib --features gpu_tests   # needs a GPU adapter
+cargo test --features gpu_tests --test canvas_binary   # opens a real window; skips with no display
 cargo run --bin garasu-canvas -- --headless --socket /tmp/c.sock
+cargo run --bin garasu-canvas -- --verify --socket /tmp/c.sock   # reads each presented surface back
 ```
 
 ## Architecture
@@ -25,8 +27,9 @@ Reusable GPU rendering library for all pleme-io graphical applications.
 | `text.rs` | `TextRenderer` — single-pass glyphon text (prefer `layers::TextLayerStack` for multi-pass) |
 | `layers.rs` | `TextLayerStack` — per-layer-isolated multi-pass text: N text surfaces (terminal + overlays) each own their own vertex buffer + `Viewport`, sharing ONE atlas/font-system; two-phase `Frame` guard, trim-once-per-frame |
 | `shader.rs` | `ShaderPipeline` — WGSL post-processing chain (texture → shader → output) |
-| `frame.rs` | `FramePipeline` — uploads a CPU rgb8 frame as a texture and draws it, pixel-exact, aspect kept (`fit`) |
-| `canvas/` | the `garasu-canvas/1` server (Unix only): `Server`, the `Sink` trait, `HeadlessCanvases`, `window::run`; binary `garasu-canvas`. Protocol: [`docs/canvas-protocol.md`](docs/canvas-protocol.md) |
+| `frame.rs` | `FramePipeline` — uploads a CPU rgb8 frame as a texture and draws it, pixel-exact, aspect kept (`fit`); `Readback` — a texture it drew into, read back and compared with the frame (`verify`) |
+| `headless.rs` | `HeadlessTarget` / `HeadlessHarness` / `HeadlessSwapchain` — offscreen targets for GPU tests; `read_texture` — the one copy-and-map readback, for offscreen and surface textures |
+| `canvas/` | the `garasu-canvas/1` server (Unix only): `Server`, the `Sink` trait, `HeadlessCanvases`, `window::run` (`Options { verify }` reads each presented surface back); binary `garasu-canvas`. Protocol: [`docs/canvas-protocol.md`](docs/canvas-protocol.md) |
 | `window.rs` | `AppWindow` — winit window creation helpers |
 | `error.rs` | `GarasuError` — unified error enum |
 
