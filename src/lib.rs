@@ -12,8 +12,11 @@
 //! - `GarasuError`: unified error type
 
 pub mod adaptive;
+#[cfg(unix)]
+pub mod canvas;
 pub mod context;
 pub mod error;
+pub mod frame;
 pub mod headless;
 pub mod kentou;
 pub mod layers;
@@ -30,6 +33,7 @@ pub use adaptive::{
 };
 pub use context::GpuContext;
 pub use error::GarasuError;
+pub use frame::FramePipeline;
 pub use quad::{QuadInstance, QuadPipeline};
 pub use shader::{BLUR_SHADER, ShaderConfig, ShaderPipeline, ShaderSource};
 pub use shape_cache::{

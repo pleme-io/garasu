@@ -2,7 +2,7 @@
   "schema_version": 2,
   "cargo_lock_sha256": "0d9f654b08a1801bd5d46876e04c181b6f9df29b98042d413bc63145a7d440a7",
   "manifest_sha256": {
-    "Cargo.toml": "0141626ac4dcd18b55e743ed40665378ab678bbe4414f4917e21c242a0a06079"
+    "Cargo.toml": "594d735ba17c11774a6d0974ce315e0eef148b72975a6424a0cd421a7a480da2"
   },
   "target_resolves": {
     "base": {
@@ -740,6 +740,16 @@
             "features": [
               "derive"
             ],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "serde_json",
+            "package_key": "serde_json-1.0.151",
+            "kind": "normal",
+            "features": [],
             "uses_default_features": true,
             "optional": false,
             "target": null,
@@ -17901,7 +17911,13 @@
       "lib_target": {
         "name": "garasu",
         "path": "src/lib.rs"
-      }
+      },
+      "binaries": [
+        {
+          "name": "garasu-canvas",
+          "path": "src/bin/garasu-canvas.rs"
+        }
+      ]
     },
     "gethostname-1.1.0": {
       "edition": "2021"

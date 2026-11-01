@@ -8,6 +8,9 @@
 ```bash
 cargo build
 cargo test --lib
+cargo test --test canvas --test canvas_binary
+cargo test --lib --features gpu_tests   # needs a GPU adapter
+cargo run --bin garasu-canvas -- --headless --socket /tmp/c.sock
 ```
 
 ## Architecture
@@ -22,6 +25,8 @@ Reusable GPU rendering library for all pleme-io graphical applications.
 | `text.rs` | `TextRenderer` — single-pass glyphon text (prefer `layers::TextLayerStack` for multi-pass) |
 | `layers.rs` | `TextLayerStack` — per-layer-isolated multi-pass text: N text surfaces (terminal + overlays) each own their own vertex buffer + `Viewport`, sharing ONE atlas/font-system; two-phase `Frame` guard, trim-once-per-frame |
 | `shader.rs` | `ShaderPipeline` — WGSL post-processing chain (texture → shader → output) |
+| `frame.rs` | `FramePipeline` — uploads a CPU rgb8 frame as a texture and draws it, pixel-exact, aspect kept (`fit`) |
+| `canvas/` | the `garasu-canvas/1` server (Unix only): `Server`, the `Sink` trait, `HeadlessCanvases`, `window::run`; binary `garasu-canvas`. Protocol: [`docs/canvas-protocol.md`](docs/canvas-protocol.md) |
 | `window.rs` | `AppWindow` — winit window creation helpers |
 | `error.rs` | `GarasuError` — unified error enum |
 
@@ -42,7 +47,7 @@ Custom shaders loaded from `~/.config/{app}/shaders/*.wgsl`.
 
 ### Consumers
 
-Used by: mado, hibiki, kagi, kekkai, tobira (planned migration)
+Used by: mado, hibiki, kagi, kekkai, tobira (planned migration). blue's `display` capability reaches garasu through the `garasu-canvas` binary over a socket, never by linking it.
 
 ## Design Decisions
 

@@ -45,10 +45,10 @@ dirs = "6"
 # mado already uses for its own (now superseded) private shape cache, so the
 # fleet keeps one LRU implementation rather than two.
 lru = "0.12"
+serde_json = "1.0"
 
 [dev-dependencies]
 tempfile = "3"
-serde_json = "1.0"
 
 [features]
 default = []
