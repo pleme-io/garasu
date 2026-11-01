@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "cargo_lock_sha256": "88e62b639b2dde67f20e4fdb0169fb026471316f80239fd0d0dfb5d2f0ef8ec1",
+  "cargo_lock_sha256": "bb0af15f408c95d6efc5934cde4a6a80db63de806fbe1ad1d9fcc5873b41ef90",
   "manifest_sha256": {
-    "Cargo.toml": "05456e8a0d2f43f68b8a87d4cc281ea0df5cbd9ea7b4dcd19294f53b362e0bf5"
+    "Cargo.toml": "b500f343b9afc123278426056c45c536785f0b0a161e7887ab2eb925f8041732"
   },
   "target_resolves": {
     "base": {
@@ -629,7 +629,7 @@
           "std"
         ]
       },
-      "garasu-0.1.18": {
+      "garasu-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "bincode",
@@ -17890,7 +17890,7 @@
     "foreign-types-shared-0.3.1": {
       "edition": "2018"
     },
-    "garasu-0.1.18": {
+    "garasu-0.1.19": {
       "edition": "2024",
       "build_script": "build.rs",
       "lib_target": {
